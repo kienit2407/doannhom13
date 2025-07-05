@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/input_custom"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+     <LinearLayout
+         android:layout_width="wrap_content"
+         android:layout_gravity="right"
+         android:orientation="horizontal"
+         android:layout_height="wrap_content">
+         <ImageView
+             android:id="@+id/imgButtonClose"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             app:srcCompat="@drawable/close" />
+     </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Create playlist for yourself"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/edtNamePlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/input_custom2"
+        android:ems="10"
+        android:hint="Enter name playist"
+        android:inputType="text"
+        android:minHeight="60dp"
+        android:paddingHorizontal="20dp"
+        android:textColorHint="@color/textColor2"
+        android:textSize="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCreate"
+            android:layout_width="146dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/button_custom"
+            android:elevation="20dp"
+            android:minHeight="60dp"
+            android:text="Done"
+            android:textAllCaps="false"
+            android:textColor="#ffff"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

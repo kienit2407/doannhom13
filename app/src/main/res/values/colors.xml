@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primaryColor">#2ED198</color>
+    <color name="textColor">#1F2937</color>
+    <color name="textColor2">#6B7280</color>
+    <color name="backgroundColor">#F2F2F2</color>
+    <color name="textColorButton">#FAFAFA</color>
+    <color name="textState">#E2455D</color>
+    <color name="colorCheckBox">#2ED197</color>
+    <color name="textcolor4">#979797</color>
+
+</resources>

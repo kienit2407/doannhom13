@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#24D778"
+                android:centerColor="#2ED198"
+                android:endColor="#39C8BE"
+                android:angle="60"/>
+            <size android:width="18dp" android:height="18dp" /> <!-- Kích thước -->
+        </shape>
+    </item>
+</layer-list>

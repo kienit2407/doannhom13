@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<!--    GIÚP ICON ĐƯỢC CHỌN KHÁC MÀU VỚI ICON CHƯA ĐƯƠCJ CHỌN-->
+    <item android:color="#2ED198" android:state_checked="true" />
+<!--    MẶC ĐỊNH KHI CHƯA CHỌN -->
+    <item android:color="#6B7281" />
+</selector>

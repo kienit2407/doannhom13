@@ -1,0 +1,171 @@
+package com.example.doan13.ui.fragments
+
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.os.Bundle
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.doan13.R
+import com.example.doan13.databinding.DialogCreatePlaylistBinding
+import com.example.doan13.databinding.FragmentFavoriteSongBinding
+import com.example.doan13.ui.adapters.FavoritePlaylistAdapter
+import com.example.doan13.ui.adapters.PlaylistAdapter
+import com.example.doan13.viewmodels.AuthViewModel
+import com.example.doan13.viewmodels.FavoriteViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
+
+class FavoriteSongFragment : Fragment() {
+    private var _binding: FragmentFavoriteSongBinding? = null
+    private val binding get() = _binding!!
+    private val favoriteviewModel: FavoriteViewModel by activityViewModels ()
+    private val authViewModel: AuthViewModel by activityViewModels()
+    private lateinit var adapter: FavoritePlaylistAdapter
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentFavoriteSongBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+// Lấy userId từ Firebase Auth
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(context, "Please log in to view playlists", Toast.LENGTH_SHORT).show()
+            return
+        }
+//// Thiết lập LayoutManager
+      binding.rvPlaylists.layoutManager = LinearLayoutManager(context)
+        adapter = FavoritePlaylistAdapter(
+            onPlaylistClick = { playlistId ->
+                val action = FavoriteSongFragmentDirections.actionFavoriteSongFragmentToPlaylistDetailFragment(playlistId)
+                findNavController().navigate(action)
+            },
+            onDeleteClick = { playlistId ->
+                showDialogdelete(playlistId, userId)
+            }
+        )
+        favoriteviewModel.loading.observe(viewLifecycleOwner){isLoaded ->
+            if (isLoaded){
+                binding.progressBar.visibility =View.VISIBLE
+            }
+            else{
+                binding.progressBar.visibility =View.GONE
+            }
+        }
+        binding.rvPlaylists.adapter = adapter
+
+        lifecycleScope.launch {
+            try {
+                favoriteviewModel.loadPlaylists(userId)
+            } catch (e: Exception) {
+                Log.e("TracksTabFragment", "Error loading tracks: ${e.message}")
+            }
+        }
+
+        binding.root.setOnClickListener {
+            showCreatePlaylistDialog()
+        }
+
+        favoriteviewModel.playlists.observe(viewLifecycleOwner) { playlists ->
+            //update lại adaptter
+            adapter.setPlaylists(playlists ?: emptyList())
+            binding.txtYourPlaylist.text = "Your Playlist (${playlists?.size.toString()})"
+        }
+
+        favoriteviewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
+
+            result?.let {
+                when {
+                    it.isSuccess -> {
+                        Toast.makeText(context, "Playlist created!", Toast.LENGTH_SHORT).show()
+                        favoriteviewModel.loadPlaylists(userId) // Cập nhật lại danh sách
+                    }
+                    it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                }
+                favoriteviewModel.resetCreatePlaylistResult()
+
+            }
+        }
+
+        favoriteviewModel.deletePlaylistResult.observe(viewLifecycleOwner) { result ->
+            result?.let {
+                when {
+                    it.isSuccess -> {
+                        Toast.makeText(context, "Playlist deleted!", Toast.LENGTH_SHORT).show()
+                        favoriteviewModel.loadPlaylists(userId) // Cập nhật lại danh sách
+                    }
+                    it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+
+                }
+                favoriteviewModel.resetDeletePlaylistResult()
+            }
+        }
+
+    }
+    private fun showDialogdelete(playlistId: String, userId:String) {
+        val dialog = AlertDialog.Builder(requireContext())
+        dialog.apply {
+            //tiêu đề
+            setTitle("Delete Playlist")
+            setMessage("Do you want to delete this playlist?")
+            //thêm nút phủ định và khẳng định
+            setNegativeButton("No") { dialogInterface: DialogInterface, i: Int ->
+                dialogInterface.dismiss() //bỏ qua khi nhấn no
+            }
+            //nust đồng ý
+            setPositiveButton("Yes") { dialogInterface: DialogInterface, i: Int ->
+                favoriteviewModel.deletePlaylist(playlistId, userId)
+            }
+            //ngăn khong cho đóng dialog khi click ra ngoài
+        }
+        dialog.show()
+    }
+    private fun showCreatePlaylistDialog() {
+        val dialogBinding = DialogCreatePlaylistBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        lifecycleScope.launch {
+            dialogBinding.btnCreate.setOnClickListener {
+                val name = dialogBinding.edtNamePlaylist.text.toString()
+                if (name.isBlank()) {
+                    Toast.makeText(context, "Please enter a playlist name", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId == null) {
+                    Toast.makeText(context, "Please log in to create a playlist", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                favoriteviewModel.createPlaylist(userId, name)
+                dialog.dismiss()
+            }
+
+            dialogBinding.imgButtonClose.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
