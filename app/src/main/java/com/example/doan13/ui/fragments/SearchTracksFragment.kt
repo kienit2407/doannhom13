@@ -95,7 +95,6 @@ class SearchTracksFragment : Fragment() {
     }
 
     private fun showAddToPlaylistDialog(songId: String) {
-
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         favoriteViewModel.loadPlaylists(userId)
         favoriteViewModel.playlists.observe(viewLifecycleOwner) { playlists ->

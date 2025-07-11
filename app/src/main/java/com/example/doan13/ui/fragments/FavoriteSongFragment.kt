@@ -18,6 +18,7 @@ import com.example.doan13.databinding.DialogCreatePlaylistBinding
 import com.example.doan13.databinding.FragmentFavoriteSongBinding
 import com.example.doan13.ui.adapters.FavoritePlaylistAdapter
 import com.example.doan13.ui.adapters.PlaylistAdapter
+import com.example.doan13.utilities.common.ToastCustom
 import com.example.doan13.viewmodels.AuthViewModel
 import com.example.doan13.viewmodels.FavoriteViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,6 +31,8 @@ class FavoriteSongFragment : Fragment() {
     private val favoriteviewModel: FavoriteViewModel by activityViewModels ()
     private val authViewModel: AuthViewModel by activityViewModels()
     private lateinit var adapter: FavoritePlaylistAdapter
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,33 +42,11 @@ class FavoriteSongFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-// Lấy userId từ Firebase Auth
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId == null) {
-            Toast.makeText(context, "Please log in to view playlists", Toast.LENGTH_SHORT).show()
-            return
-        }
-//// Thiết lập LayoutManager
-      binding.rvPlaylists.layoutManager = LinearLayoutManager(context)
-        adapter = FavoritePlaylistAdapter(
-            onPlaylistClick = { playlistId ->
-                val action = FavoriteSongFragmentDirections.actionFavoriteSongFragmentToPlaylistDetailFragment(playlistId)
-                findNavController().navigate(action)
-            },
-            onDeleteClick = { playlistId ->
-                showDialogdelete(playlistId, userId)
-            }
-        )
-        favoriteviewModel.loading.observe(viewLifecycleOwner){isLoaded ->
-            if (isLoaded){
-                binding.progressBar.visibility =View.VISIBLE
-            }
-            else{
-                binding.progressBar.visibility =View.GONE
-            }
-        }
-        binding.rvPlaylists.adapter = adapter
 
+        setRecycleView()
+        setObserve()
+        setOnClick()
+        //load dữ liệu
         lifecycleScope.launch {
             try {
                 favoriteviewModel.loadPlaylists(userId)
@@ -74,14 +55,31 @@ class FavoriteSongFragment : Fragment() {
             }
         }
 
+
+    }
+
+    private fun setOnClick() {
         binding.root.setOnClickListener {
             showCreatePlaylistDialog()
         }
+    }
+
+    private fun setObserve() {
+        favoriteviewModel.loading.observe(viewLifecycleOwner){isLoaded ->
+            if (isLoaded){
+                binding.progressBar.visibility =View.VISIBLE
+            }
+            else{
+                binding.progressBar.visibility =View.GONE
+            }
+        }
 
         favoriteviewModel.playlists.observe(viewLifecycleOwner) { playlists ->
-            //update lại adaptter
-            adapter.setPlaylists(playlists ?: emptyList())
-            binding.txtYourPlaylist.text = "Your Playlist (${playlists?.size.toString()})"
+            if(playlists != null && playlists.isNotEmpty()){
+                adapter.setPlaylists(playlists )
+                binding.txtYourPlaylist.text = "Your Playlist (${playlists?.size})"
+                binding.textViewEmpty.visibility = View.GONE
+            }
         }
 
         favoriteviewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
@@ -89,7 +87,7 @@ class FavoriteSongFragment : Fragment() {
             result?.let {
                 when {
                     it.isSuccess -> {
-                        Toast.makeText(context, "Playlist created!", Toast.LENGTH_SHORT).show()
+                        ToastCustom.showCustomToast(requireContext(), "Playlist created!")
                         favoriteviewModel.loadPlaylists(userId) // Cập nhật lại danh sách
                     }
                     it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
@@ -103,7 +101,7 @@ class FavoriteSongFragment : Fragment() {
             result?.let {
                 when {
                     it.isSuccess -> {
-                        Toast.makeText(context, "Playlist deleted!", Toast.LENGTH_SHORT).show()
+                        ToastCustom.showCustomToast(requireContext(), "Playlist deleted!")
                         favoriteviewModel.loadPlaylists(userId) // Cập nhật lại danh sách
                     }
                     it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
@@ -112,8 +110,22 @@ class FavoriteSongFragment : Fragment() {
                 favoriteviewModel.resetDeletePlaylistResult()
             }
         }
-
     }
+
+    private fun setRecycleView() {
+        binding.rvPlaylists.layoutManager = LinearLayoutManager(context)
+        adapter = FavoritePlaylistAdapter(
+            onPlaylistClick = { playlistId ->
+                val action = FavoriteSongFragmentDirections.actionFavoriteSongFragmentToPlaylistDetailFragment(playlistId)
+                findNavController().navigate(action)
+            },
+            onDeleteClick = { playlistId ->
+                showDialogdelete(playlistId, userId)
+            }
+        )
+        binding.rvPlaylists.adapter = adapter
+    }
+
     private fun showDialogdelete(playlistId: String, userId:String) {
         val dialog = AlertDialog.Builder(requireContext())
         dialog.apply {
@@ -142,7 +154,8 @@ class FavoriteSongFragment : Fragment() {
             dialogBinding.btnCreate.setOnClickListener {
                 val name = dialogBinding.edtNamePlaylist.text.toString()
                 if (name.isBlank()) {
-                    Toast.makeText(context, "Please enter a playlist name", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+                    ToastCustom.showCustomToast(requireContext(), "Please enter a playlist name!")
                     return@setOnClickListener
                 }
 

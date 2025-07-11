@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_marginTop="5dp"
         android:ellipsize="end"
-        android:maxLines="2"
+        android:maxLines="1"
         android:textStyle="bold"
         android:textColor="@color/textColorButton"
         android:textSize="16sp"
@@ -38,6 +38,7 @@
         android:id="@+id/txtArtist"
         android:layout_width="match_parent"
         android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@color/textColorButton"
         android:layout_height="wrap_content"
         android:text="Hay trao cho anh" />
@@ -85,29 +86,52 @@
             android:layout_weight="1"
             app:srcCompat="@drawable/libary1" />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="29dp">
+
+        <LinearLayout
+            android:id="@+id/linearLayout7"
+            android:layout_width="79dp"
+            android:layout_height="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView6"
+                android:layout_width="wrap_content"
+                android:layout_height="14dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/view2" />
+
+            <TextView
+                android:id="@+id/txtLuotxem"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="4 lượt nghe"
+                android:textColor="@color/textColorButton"
+                android:textSize="10sp" />
+
+
+        </LinearLayout>
+
         <ImageView
-            android:id="@+id/imageView6"
-            android:layout_width="13dp"
+            android:id="@+id/imgbuttonAddPlaylist"
+            android:layout_width="29dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            app:srcCompat="@drawable/view2" />
-
-        <TextView
-            android:id="@+id/txtLuotxem"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:ellipsize="end"
-            android:gravity="center"
-            android:text="4 lượt nghe"
-            android:textColor="@color/textColorButton"
-            android:textSize="10sp" />
-
-    </LinearLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/add_playlist2" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </LinearLayout>

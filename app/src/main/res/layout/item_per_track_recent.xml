@@ -4,6 +4,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:padding="5dp"
+    android:background="@drawable/background3"
     android:layout_margin="5dp">
 
 
@@ -28,7 +30,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textStyle="bold"
-        android:textColor="@color/textColor"
+        android:textColor="@color/textColorButton"
         android:textSize="12sp"
         android:layout_height="wrap_content"
         android:text="Hay trao cho anh" />
@@ -39,7 +41,7 @@
         android:ellipsize="end"
         android:textSize="12sp"
         android:maxLines="1"
-        android:textColor="@color/textcolor4"
+        android:textColor="@color/textColorButton"
         android:layout_height="wrap_content"
         android:text="Hay trao cho anh" />
 

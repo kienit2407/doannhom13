@@ -1,5 +1,6 @@
 package com.example.doan13.viewmodels
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -47,16 +48,10 @@ class SongViewModel @Inject constructor(
     private val _searchPlaylists = MutableLiveData<List<PlaylistModel>>() // Kết quả playlist
     val searchPlaylists: LiveData<List<PlaylistModel>> get() = _searchPlaylists
 
-    private val _getMyTracks = MutableLiveData<List<SongModels>?>()
-    val getMyTracks: LiveData<List<SongModels>?> get() = _getMyTracks
-    // LiveData cho thông tin người dùng
-    // LiveData cho thông tin người dùng
-    private val _userInfo = MutableLiveData<UserModel?>()
-    val userInfo: LiveData<UserModel?> get() = _userInfo
     private val userCache = mutableMapOf<String, String>()
     // LiveData cho danh sách bài hát đã đăng
-    private val _uploadedSongs = MutableLiveData<List<SongModels>?>()
-    val uploadedSongs: LiveData<List<SongModels>?> get() = _uploadedSongs
+    private val _uploaderSongs = MutableLiveData<List<SongModels>?>()
+    val uploaderSongs: LiveData<List<SongModels>?> get() = _uploaderSongs
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
@@ -67,62 +62,31 @@ class SongViewModel @Inject constructor(
     private val _getOtherSongs = MutableLiveData<List<SongModels>>()
     val getOtherSongs: LiveData<List<SongModels>> get() = _getOtherSongs
 
-    private var _iUploaded = MutableLiveData<Boolean?>()
-    val isUploaded: LiveData<Boolean?> = _iUploaded
+    private var _isUploaded = MutableLiveData<Boolean?>()
+    val isUploaded: LiveData<Boolean?> = _isUploaded
     private var _isUploadedThumnailTrack = MutableLiveData<Boolean?>()
     val isUploadedThumnailTrack: LiveData<Boolean?> = _isUploadedThumnailTrack
     private var _isUploadedThumnailPlaylist = MutableLiveData<Boolean?>()
     val isUploadedThumnailPlaylist: LiveData<Boolean?> = _isUploadedThumnailPlaylist
-    fun removeChangeAvt(){
-        _iUploaded.value = null
-    }
-    fun changeAvt (imgUrl: Uri){
-        viewModelScope.launch {
-            songRepository.updateAvt(imgUrl)
-            _iUploaded.value = true
-        }
-    }
-    fun changeAvtTrack (imgUrl: Uri , songId: String){
-        viewModelScope.launch {
-            songRepository.updateAvtTracks(imgUrl, songId)
-          _isUploadedThumnailTrack.value = true
-        }
-    }
-    fun changeAvtPLaylist (imgUrl: Uri , playlistId: String){
-        viewModelScope.launch {
-            songRepository.updateAvtPlaylist(imgUrl, playlistId)
-            _isUploadedThumnailPlaylist.value = true
-        }
-    }
+
+
+
     // Lấy thông tin người dùng và danh sách bài hát đã đăng
     fun getUserAndUploadedSongs(userId: String) {
         _loading.value = true
         viewModelScope.launch {
             _loading.value = true
             try {
-                val user = songRepository.getUserById(userId)
-                _userInfo.postValue(user)
-                user?.uploadedSongs?.let { songIds ->
-                    val songs = songRepository.getSongsByIds(songIds)
-                    _uploadedSongs.postValue(songs)
-                } ?: run {
-                    _uploadedSongs.postValue(emptyList())
-                }
+                _uploaderSongs.value = songRepository.getSongsByUserUploaded(userId)
             } catch (e: Exception) {
                 Log.e("SongViewModel", "Error fetching data: ${e.message}")
-                _userInfo.postValue(null)
-                _uploadedSongs.postValue(emptyList())
+                _uploaderSongs.postValue(emptyList())
             }
-
             _loading.value =false
         }
     }
 
-    fun getMyTracks (userId: String){
-        viewModelScope.launch {
-            _getMyTracks.value = songRepository.getSongsByUser(userId)
-        }
-    }
+
     fun getUserName(userId: String, callback: (String) -> Unit) {
         // Kiểm tra xem tên người dùng đã có trong cache chưa
         val cachedUserName = userCache[userId]
@@ -144,6 +108,8 @@ class SongViewModel @Inject constructor(
                 }
         }
     }
+
+    //dùng để lấy avt trong public playlist detail
     fun getAvatarByUserId(userId: String, callback: (String) -> Unit) {
         firestore.collection("users").document(userId)
             .get()
@@ -178,32 +144,20 @@ class SongViewModel @Inject constructor(
             _loading.value = false
         }
     }
-    fun loadData1(userId :String) {
+    fun loadDataWipe(userId :String) {
         _loading.value = true
         viewModelScope.launch {
-//            if(
-//                  _recentSongs.value.isNullOrEmpty()
-//                ||_artists.value.isNullOrEmpty()
-//                ||_newTracks.value.isNullOrEmpty()
-//                ||_popularPlaylists.value.isNullOrEmpty()
-//                ||_recommendedTracks.value.isNullOrEmpty()
-//                ||_recommendedPlaylists.value.isNullOrEmpty()
-//                ){
             _recentSongs.value = songRepository.getRecentSongs(userId)
             _artists.value = songRepository.getArtists(userId)
             _newTracks.value = songRepository.getNewTracks(userId)
             _popularPlaylists.value = songRepository.getPopularPlaylists(userId)
             _recommendedTracks.value = songRepository.getRecommendedTracks(userId)
             _recommendedPlaylists.value = songRepository.getRecommendedPlaylists(userId)
-//            }
+            //load
             _loading.value = false
         }
     }
-    fun getOtherTrack (userId: String){
-        viewModelScope.launch {
-         _getOtherSongs.value =  songRepository.getSongsByUser(userId)
-        }
-    }
+
     fun removeSong(songId : String, userId: String){
        viewModelScope.launch {
            _loading.value = true
@@ -211,8 +165,6 @@ class SongViewModel @Inject constructor(
                _removeSongs.value = songRepository.removeSong(userId, songId)
            }catch (e:Exception){
                Log.e("","")
-           }finally {
-               _loading.value = false
            }
        }
     }
@@ -297,14 +249,13 @@ class SongViewModel @Inject constructor(
             _loading.value = false
         }
     }
-    fun removeFunRemoveSong (){
-        viewModelScope.launch {
-            _removeSongs.value = null
-        }
-    }
-    fun removeObSong (){
-        viewModelScope.launch {
-            _uploadedSongs.value = emptyList()
-        }
-    }
+
+    //reset
+  fun resetuploaderSongs(){
+      _uploaderSongs.value = null
+  }
+    fun resetremoveSongs(){
+      _removeSongs.value = null
+  }
+
 }

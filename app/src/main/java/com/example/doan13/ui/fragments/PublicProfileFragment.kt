@@ -62,122 +62,48 @@ class PublicProfileFragment : Fragment() {
 
 
     //hàm xử lý trong đây
-    @SuppressLint("SuspiciousIndentation")
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        authViewModel.initGoogle(requireContext())
-        //trong activity thì observe nó đã là viewlife rồi thì chỉ cần sử dụng this
-        //do là fragment bị gỡ bỏ bị destroy nhưng vãn còn tỏng bộ nhớ làm app bị crash app
-        //khi fragment destroy thì tự động dừng observe
 
-       songViewModel.userInfo.observe(viewLifecycleOwner) { data ->
-            data?.let {
-                binding.txtName.text = data?.name ?: "Không xác định"
-                Glide.with(this)
-                    .load(data?.imageUrl)
-                    .placeholder(R.drawable.user)
-                    .error(R.drawable.user)
-                    .into(binding.imgAvatar)
 
-                binding.txtEmail.text =data?.email
-            }
-
-        }
-        binding.btnBack.setOnClickListener{
-            findNavController().popBackStack()
-            activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.VISIBLE
-        }
         // Gọi dữ liệu
         lifecycleScope.launch {
-//            binding.progress.visibility = View.VISIBLE
             try {
                 songViewModel.getUserAndUploadedSongs(args.userId)
             } catch (e: Exception) {
                 Log.e("TracksTabFragment", "Error loading data: ${e.message}")
-            } finally {
-//                binding.progress.visibility = View.GONE
             }
         }
-        songViewModel.loading.observe(viewLifecycleOwner){isLoaded ->
-            if (isLoaded){
-                binding.progress.visibility =View.VISIBLE
-            }
-            else{
-                binding.progress.visibility =View.GONE
+        lifecycleScope.launch {
+            try {
+                authViewModel.loadUserOther(args.userId)
+            } catch (e: Exception) {
+                Log.e("TracksTabFragment", "Error loading data: ${e.message}")
             }
         }
-
-        setObsern()
+        setReset()
+        setObserve()
         setRecycleView()
-
-//        authViewModel.userInfo.observe(viewLifecycleOwner) { info ->
-//            if (info != null) {
-//                binding.txtName.text = info
-//            }
-//        }
-//        authViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
-//            error?.let {
-//                binding.txtName.text = "Lỗi: $it"
-//            }
-//        }
-
-//        binding.btnSignOut.setOnClickListener {
-//            val dialog = AlertDialog.Builder(requireContext())
-//            dialog.apply {
-//                //tiêu đề
-//                setTitle("Sign Out")
-//                setMessage("Do you want to sign out")
-//                //thêm nút phủ định và khẳng định
-//                setNegativeButton("No") { dialogInterface: DialogInterface, i: Int ->
-//                    dialogInterface.dismiss() //bỏ qua khi nhấn no
-//                }
-//                //nust đồng ý
-//                setPositiveButton("Yes") { dialogInterface: DialogInterface, i: Int ->
-//                    authViewModel.signOut()
-//                }
-//                //ngăn khong cho đóng dialog khi click ra ngoài
-//            }
-//            dialog.show()
-//        }
-//
-//        binding.ModifyName.setOnClickListener {
-//            showCreatePlaylistDialog()
-//        }
-//        authViewModel.signOutSuccess.observe (viewLifecycleOwner) {success->
-//            Toast.makeText(requireContext(), "Đăng xuất thành công", Toast.LENGTH_SHORT).show()
-//            startActivity(Intent(requireContext() , RegisterActivity::class.java))
-//        }
-//        // Cấu hình RecyclerView
-//        adapter = ProfileMyTrackApdapter(onSongClick = { songId ->
-//            // Phát bài hát cụ thể từ playlist
-//
-//                authViewModel.updateRecentlyPlayed(args.userId, songId)
-//
-//            mediaViewModel.setSongAndPlay(songId)
-//            showMiniPlayer()
-//            // Xử lý khi click song (có thể để trống nếu chưa cần)
-//        })
-//        binding.rvMyTrackTab.layoutManager = LinearLayoutManager(requireContext())
-//        binding.rvMyTrackTab.adapter = adapter
-
-        // Gọi và quan sát dữ liệu
-//        lifecycleScope.launch {
-//            try {
-//                songViewModel.getMyTracks(args.userId)
-//            } catch (e: Exception) {
-//                Log.e("TracksTabFragment", "Error loading tracks: ${e.message}")
-//            }
-//        }
-        // Quan sát LiveData
-//        setObserve()
-
+        setOnClick()
 
     }
 
-    @SuppressLint("SuspiciousIndentation")
+    private fun setReset() {
+        authViewModel.resetloadUserOther()
+        songViewModel.resetuploaderSongs()
+    }
+
+    private fun setOnClick() {
+        binding.btnBack.setOnClickListener{
+            findNavController().popBackStack()
+            activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.VISIBLE
+        }
+
+    }
+
     private fun setRecycleView() {
         // Cấu hình RecyclerView
-
         adapter = ProfileOtherTrackApdapter (
             onSongClick = {songId ->
               val userId = authViewModel.getuserId()
@@ -195,34 +121,39 @@ class PublicProfileFragment : Fragment() {
         binding.rvMyTrack.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMyTrack.adapter = adapter
     }
-    private fun setObsern() {
-        songViewModel.uploadedSongs.observe(viewLifecycleOwner) { songs ->
-            Log.d("YourFragment", "Observed uploadedSongs: ${songs?.size}")
+    private fun setObserve() {
+        songViewModel.uploaderSongs.observe(viewLifecycleOwner) { songs ->
             if (songs != null && songs.isNotEmpty()) {
-                songViewModel.removeObSong()
                 // Cập nhật adapter và UI
                 adapter.setSongs(songs)
                 binding.txtAmount.text = songs.size.toString()
-//                binding.textViewEmpty.visibility = View.GONE
-            } else {
-                // Hiển thị thông báo rỗng
-//                binding.textViewEmpty.visibility = View.VISIBLE
+                binding.textViewEmpty.visibility = View.GONE
             }
         }
+
+        songViewModel.loading.observe(viewLifecycleOwner){isLoaded ->
+            if (isLoaded){
+                binding.progress.visibility =View.VISIBLE
+            }
+            else{
+                binding.progress.visibility =View.GONE
+            }
+        }
+        authViewModel.userDataOrther.observe(viewLifecycleOwner) { data ->
+            data?.let {
+                binding.txtName.text = data.name.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }} ?: "Không xác định"
+                Glide.with(this)
+                    .load(data.imageUrl)
+                    .placeholder(R.drawable.user)
+                    .error(R.drawable.user)
+                    .into(binding.imgAvatar)
+                binding.txtEmail.text = data.email
+                binding.txtTrack.text = "Track Of ${data.name.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }} ?: "Không xác định"}"
+            }
+        }
+
     }
 
-    //    private fun setObserve() {
-//        songViewModel.getMyTracks.observe(viewLifecycleOwner) { songs ->
-//            if (songs.isNullOrEmpty()) {
-//                binding.rvMyTrackTab.visibility = View.GONE
-//                binding.textViewEmpty.visibility = View.VISIBLE
-//            } else {
-//                binding.rvMyTrackTab.visibility = View.VISIBLE
-//                binding.textViewEmpty.visibility = View.GONE
-//                adapter.setSongs(songs) // Cập nhật adapter với dữ liệu
-//            }
-//        }
-//    }
     private fun showMiniPlayer() {
         lifecycleScope.launch {
             // Show mini player in the mini player container

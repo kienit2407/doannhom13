@@ -59,6 +59,7 @@
                 android:name="playlistId"
                 app:argType="string" />
         </action>
+
     </fragment>
 
     <!-- Search Fragment -->
@@ -84,8 +85,16 @@
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.doan13.ui.fragments.ProfileFragment"
-        android:label="Profile"
-        />
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profileFragment_to_playlistDetailFragment"
+
+            app:destination="@id/publicPlaylistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string" />
+        </action>
+    </fragment>
 
     <!-- Upload Fragment -->
     <fragment
@@ -147,5 +156,12 @@
         <argument
             android:name="userId"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/PLaylistLikedProfileFragment"
+        android:name="com.example.doan13.ui.fragments.PlaylistsTabFragment"
+        android:label="PublicProFIle">
+
     </fragment>
 </navigation>

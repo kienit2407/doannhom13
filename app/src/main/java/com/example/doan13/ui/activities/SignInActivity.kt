@@ -1,17 +1,21 @@
 package com.example.doan13.ui.activities
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.doan13.MainActivity
 import com.example.doan13.R
 import com.example.doan13.databinding.ActivitySignInBinding
+import com.example.doan13.databinding.ToastCustomBinding
 import com.example.doan13.viewmodels.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
@@ -58,18 +62,18 @@ class SignInActivity : AppCompatActivity() {
         //khởi tạo
         authViewModel.initGoogle(this)
 
-        authViewModel.loading.observe(this){isLoaded ->
-            if (isLoaded){
+        authViewModel.loading.observe(this) { isLoaded ->
+            if (isLoaded) {
                 binding.progressBar.visibility = View.VISIBLE
-            }
-            else{
+            } else {
                 binding.progressBar.visibility = View.GONE
             }
         }
 
         authViewModel.loginSuccess.observe(this) { success ->
             if (success) {
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Đăng nhập thành công!")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
@@ -85,11 +89,13 @@ class SignInActivity : AppCompatActivity() {
 
             if (isHide) {
                 // Hiện mật khẩu
-                binding.editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                binding.editPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 binding.imgVisibility.setImageResource(R.drawable.visibility_on)
             } else {
                 // Ẩn mật khẩu
-                binding.editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                binding.editPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 binding.imgVisibility.setImageResource(R.drawable.visibility_off)
             }
 
@@ -103,13 +109,13 @@ class SignInActivity : AppCompatActivity() {
             val password = binding.editPassword.text.toString().trim()
             if (email.isBlank() || password.isBlank()) {
 //                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
-                binding.txtEmailState.text ="Vui lòng điền đầy đủ thông tin!"
+                binding.txtEmailState.text = "Vui lòng điền đầy đủ thông tin!"
                 binding.txtPasswordState.text = "Vui lòng điền đầy đủ thông tin!"
                 return@setOnClickListener
             }
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
 //                Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show()
-                binding.txtEmailState.text ="Email không hợp lệ"
+                binding.txtEmailState.text = "Email không hợp lệ"
                 return@setOnClickListener
             }
             authViewModel.login(email, password)
@@ -118,6 +124,24 @@ class SignInActivity : AppCompatActivity() {
         binding.btnSignInWithGG.setOnClickListener {
             signInLauncher.launch(authViewModel.getSignInIntent())
         }
+
+
+    }
+    fun showCustomToast(context: Context, message: String) {
+        // Inflate layout với View Binding
+        val binding = ToastCustomBinding.inflate(LayoutInflater.from(context))
+
+        // Gán nội dung cho TextView
+        binding.message.text = message
+
+        // Tạo Toast
+        val toast = Toast(context)
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = binding.root // Sử dụng root view từ binding
+        toast.show()
+    }
+}
+
 //        //kiểm tra trạng thái
 //        authViewModel.loginSuccess.observe(this) { success ->
 //            if (success) {
@@ -198,5 +222,5 @@ class SignInActivity : AppCompatActivity() {
 //        }
 //
 //    }
-    }
-}
+//    }
+//}

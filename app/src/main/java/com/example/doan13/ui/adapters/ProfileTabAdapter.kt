@@ -8,16 +8,14 @@ import com.example.doan13.ui.fragments.PlaylistsTabFragment
 import com.example.doan13.ui.fragments.TracksTabFragment
 import com.example.doan13.viewmodels.FavoriteViewModel
 
-class ProfileTabAdapter(fragment: Fragment, private val favoriteViewModel: FavoriteViewModel) : FragmentStateAdapter(fragment) {
-    override fun getItemCount(): Int = 4
+class ProfileTabAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
+    override fun getItemCount(): Int = 2
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> TracksTabFragment(favoriteViewModel)
-            1 -> PlaylistsTabFragment(favoriteViewModel)
-            2 -> LikedTracksTabFragment(favoriteViewModel)
-            3 -> LikedPlaylistsTabFragment(favoriteViewModel)
-            else -> LikedPlaylistsTabFragment(favoriteViewModel)
+            0 -> TracksTabFragment()
+            1 -> PlaylistsTabFragment()
+            else -> TracksTabFragment()
         }
     }
 }

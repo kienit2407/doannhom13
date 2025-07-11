@@ -11,14 +11,20 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.doan13.R
+import com.example.doan13.databinding.DialogCreatePlaylistBinding
+import com.example.doan13.databinding.DialogWaitUploadBinding
 import com.example.doan13.databinding.FragmentUploadBinding
+import com.example.doan13.utilities.common.ToastCustom
 import com.example.doan13.viewmodels.SongViewModel
 import com.example.doan13.viewmodels.UploadViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.io.File
 
 @AndroidEntryPoint
@@ -91,13 +97,13 @@ class UploadFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-// Reset trạng thái khi quay lại
-        activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.GONE
-        binding.btnBack.setOnClickListener {
-            findNavController().popBackStack()
-            binding.textViewStatus.text = "" // Reset thông báo
-        }
 
+        activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.GONE
+        setOnClick()
+
+    }
+
+    private fun setOnClick() {
         // Chọn file thumbnail
         binding.imgThumbnails.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -127,39 +133,52 @@ class UploadFragment : Fragment() {
                 Log.e("UploadFragment", "Missing info: title=$title, artist=$artist, thumbnail=$thumbnailFile, mp3=$mp3File, uploaderId=$uploaderId")
                 return@setOnClickListener
             }
-
-            // Hiển thị ProgressBar khi bắt đầu upload
-            binding.pbUploadMp3.visibility = View.VISIBLE
-            binding.textViewStatus.visibility = View.VISIBLE
-            uploadViewModel.uploadSong(thumbnailFile!!, mp3File!!, title, artist, uploaderId)
+            lifecycleScope.launch {
+                uploadViewModel.uploadSong(thumbnailFile!!, mp3File!!, title, artist, uploaderId)
+            }
+            showUploadingStateDialog()
         }
+        binding.btnBack.setOnClickListener {
+            findNavController().popBackStack()
+        }
+    }
 
+    private fun showUploadingStateDialog() {
+        val dialogBinding = DialogWaitUploadBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+        // Quan sát tiến trình tải lên
+        uploadViewModel.uploadProgress.observe(viewLifecycleOwner) { progress ->
+            dialogBinding.progressBar.progress = progress
+            dialogBinding.txtProcessState.text = "Đang tải $progress%"
+            Log.d("UploadFragment", "Upload progress: $progress%")
+        }
         // Quan sát trạng thái tải lên
         uploadViewModel.uploadState.observe(viewLifecycleOwner) { result ->
             result?.let {
                 it.onSuccess { songId ->
 //                binding.textViewStatus.text = "Tải lên thành công: $songId"
-                Log.d("UploadFragment", "Upload success: $songId")
-                binding.pbUploadMp3.visibility = View.GONE
-                Toast.makeText(requireContext(), "Tải lên thành công", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
-                binding.pbUploadMp3.visibility = View.GONE
-            }.onFailure { error ->
-                binding.pbUploadMp3.visibility = View.GONE
-                Toast.makeText(requireContext(), "Lỗi: ${error.message}", Toast.LENGTH_SHORT).show()
-//                binding.textViewStatus.text = "Lỗi: ${error.message}"
-                Log.e("UploadFragment", "Upload error: ${error.message}")
-            }
+                    Log.d("UploadFragment", "Upload success: $songId")
+                    ToastCustom.showCustomToast(requireContext(), "Tải lên thành công!")
+                    dialog.dismiss()
+                    findNavController().popBackStack()
+                }.onFailure { error ->
+//                ToastCustom.showCustomToast(requireContext(), "Đã huỷ tải lên")
+                    Log.e("UploadFragment", "Upload error: ${error.message}")
+                }
             }
         }
-        // Quan sát tiến trình tải lên
-        uploadViewModel.uploadProgress.observe(viewLifecycleOwner) { progress ->
-            binding.pbUploadMp3.progress = progress
-//            binding.textViewStatus.text = "Tiến trình: $progress%"
-            Log.d("UploadFragment", "Upload progress: $progress%")
-        }    }
-
-
+        lifecycleScope.launch {
+            dialogBinding.btnCancel.setOnClickListener {
+                uploadViewModel.cancelUpload()
+                dialog.dismiss()
+                ToastCustom.showCustomToast(requireContext(), "Đã huỷ tải lên")
+                uploadViewModel.uploadSongSession = null
+            }
+            dialog.show()
+        }
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

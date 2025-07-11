@@ -61,7 +61,8 @@
                 android:id="@+id/txtDear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Good moring"
+                android:textStyle="bold"
                 android:textColor="@color/textColorButton"
                 android:textSize="16sp" />
 

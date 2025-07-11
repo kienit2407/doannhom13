@@ -44,7 +44,6 @@ class PublistPlaylistDetailFragment : Fragment() {
     private val favoriteViewModel: FavoriteViewModel by activityViewModels()
     // Trạng thái shuffle cho playlist này
     private var isShuffleEnabled = false
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -99,11 +98,13 @@ class PublistPlaylistDetailFragment : Fragment() {
         // Play All button
         binding.btnPlayALl.setOnClickListener {
             playAllSongs(shuffle = false)
+            favoriteViewModel.updatePlayCountOfPlaylist(args.playlistId)
         }
 
         // Shuffle button
         binding.imgButtonShuffle.setOnClickListener {
             toggleShuffle()
+            favoriteViewModel.updatePlayCountOfPlaylist(args.playlistId)
         }
         binding.LlWatchProfile.setOnClickListener {
             handleWatchProfile()
@@ -135,6 +136,7 @@ class PublistPlaylistDetailFragment : Fragment() {
                     .into(binding.imgPlaylist)
 
 
+                binding.txtLuotxem.text = playlist.playCount.toString()
                 val dateFormat = SimpleDateFormat("dd•MM•yyyy", Locale.getDefault())
                 binding.txtDate.text = "Created ${it.createdAt?.let { date -> dateFormat.format(date) } ?: "Unknown"}"
 

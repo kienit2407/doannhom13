@@ -19,16 +19,6 @@
             android:textStyle="bold"
             android:textColor="@color/textColor2"
             android:text="Recent Song Played" />
-        <TextView
-            android:id="@+id/btnSeeMoreRecent"
-            android:layout_width="wrap_content"
-            android:gravity="end"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="16dp"
-            android:textStyle="bold"
-            android:textColor="@color/textColor2"
-            android:text="SeeMore" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

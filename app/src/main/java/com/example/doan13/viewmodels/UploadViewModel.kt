@@ -9,6 +9,7 @@ import com.example.doan13.data.repositories.SongRepositories
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -25,8 +26,20 @@ class UploadViewModel @Inject constructor(
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
+    private val _updateAvtState = MutableLiveData<Result<String>?>()
+    val updateAvtState: LiveData<Result<String>?> get() = _updateAvtState
+
+    private val _updateAvtProgress = MutableLiveData<Int>(0) // Thêm LiveData cho tiến trình
+    val updateAvtProgress: LiveData<Int> = _updateAvtProgress
+
+
+    var uploadSongSession: Job? = null
+
+
+
+
     fun uploadSong(thumbnail: File, mp3File: File, title: String, artist: String, uploaderId: String) {
-        viewModelScope.launch {
+        uploadSongSession =  viewModelScope.launch {
             _uploadProgress.value = 0 // Reset tiến trình
             repository.uploadSong(thumbnail, mp3File, title, artist, uploaderId) { progress ->
                 _uploadProgress.postValue(progress) // Cập nhật tiến trình lên UI
@@ -35,16 +48,18 @@ class UploadViewModel @Inject constructor(
             }
         }
     }
-
-    // Hàm mới để upload avatar
+    // Hàm để hủy quá trình tải lên
+    fun cancelUpload() {
+        uploadSongSession?.cancel() // Hủy coroutine
+    }
+    // Hàm để upload avatar
     fun updateUserAvatar(avatarFile: File, userId: String) {
         _loading.value = true
         viewModelScope.launch {
-            _uploadProgress.value = 0
             repository.updateAvatar(avatarFile, userId) { progress ->
-                _uploadProgress.postValue(progress)
+                _updateAvtProgress.postValue(progress)
             }.let { result ->
-                _uploadState.value = result
+                _updateAvtState.value = result
             }
             _loading.value = false
         }
@@ -54,4 +69,5 @@ class UploadViewModel @Inject constructor(
             _uploadState.value = null
         }
     }
+
 }

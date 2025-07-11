@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class PlaylistAdapter(
     private val onPlaylistClick: (String) -> Unit,
     private val songViewModel: SongViewModel,
+    private val onAddToPlaylistUserClick: (String) -> Unit
 ) : RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder>() {
     private var playlists: List<PlaylistModel> = emptyList()
 
@@ -47,8 +48,11 @@ class PlaylistAdapter(
             binding.root.setOnClickListener {
                 onPlaylistClick(playlist.playlistId)
             }
-            binding.txtLuotxem.text = playlist.playCount.toString()
+            binding.txtLuotxem.text = "${playlist.playCount.toString()} Lượt nghe"
             binding.txtmount.text = playlist.songIds.size.toString()
+            binding.imgbuttonAddPlaylist.setOnClickListener {
+                onAddToPlaylistUserClick(playlist.playlistId)
+            }
         }
     }
 }

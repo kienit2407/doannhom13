@@ -3,10 +3,10 @@
     <item android:id="@android:id/background">
         <shape android:shape="oval">
             <gradient
-                android:startColor="#24D778"
-                android:centerColor="#2ED198"
-                android:endColor="#39C8BE"
-                android:angle="60"/>
+                android:startColor="#00F5A0"
+                android:centerColor="#31E7CB"
+                android:angle="45"
+                android:endColor="#00D9F5"/>
             <size android:width="18dp" android:height="18dp" /> <!-- Kích thước -->
         </shape>
     </item>

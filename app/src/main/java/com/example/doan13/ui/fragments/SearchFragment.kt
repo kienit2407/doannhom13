@@ -35,15 +35,11 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupViewPagerAndTabs()
         setupSearchView()
-        songViewModel.loading.observe(viewLifecycleOwner){isLoaded ->
-            if (isLoaded){
-                binding.progressBar.visibility =View.VISIBLE
-            }
-            else{
-                binding.progressBar.visibility =View.GONE
-            }
-        }
+
+
     }
+
+
     private fun setupViewPagerAndTabs() {
         // Thiết lập ViewPager và TabLayout (giống code của bạn)
         val pagerAdapter = SearchPagerAdapter(this)

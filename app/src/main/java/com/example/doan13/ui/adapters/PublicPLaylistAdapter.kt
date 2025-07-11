@@ -8,10 +8,13 @@ import com.bumptech.glide.Glide
 import com.example.doan13.R
 import com.example.doan13.data.models.songs.PlaylistModel
 import com.example.doan13.databinding.ItemPerPlaylistBinding
+import com.example.doan13.viewmodels.SongViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
 class PublicPLaylistAdapter (
     private val onPlaylistClick: (String) -> Unit,
+    private val onAddPlaylistClick: (String) -> Unit,
+    private val songViewModel: SongViewModel
 ) : RecyclerView.Adapter<PublicPLaylistAdapter.PlaylistViewHolder>(){
     private val firestore = FirebaseFirestore.getInstance()
     private var playlists: List<PlaylistModel> = emptyList()
@@ -43,32 +46,21 @@ class PublicPLaylistAdapter (
                 .placeholder(R.drawable.user)
                 .into(binding.imgThumbnails)
 
-            getUserName(playlist.creatorId){userName->
+            songViewModel.getUserName(playlist.creatorId){ userName->
                 binding.txtArtist.text = userName.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }}
             }
 
             binding.root.setOnClickListener {
                 onPlaylistClick(playlist.playlistId)
             }
-            binding.txtLuotxem.text = playlist.playCount.toString()
+            binding.txtLuotxem.text = "${playlist.playCount} Lượt nghe"
             binding.txtmount.text = playlist.songIds.size.toString()
+
+            binding.imgbuttonAddPlaylist.setOnClickListener {
+                onAddPlaylistClick(playlist.playlistId)
+            }
 
 
         }
-    }
-    private fun getUserName(userId: String, callback: (String) -> Unit) {
-        firestore.collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val userName = document.getString("name") ?: "Unknown User"
-                    callback(userName)
-                } else {
-                    callback("Unknown User")
-                }
-            }
-            .addOnFailureListener {
-                callback("Unknown User")
-            }
     }
 }

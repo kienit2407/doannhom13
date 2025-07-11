@@ -16,8 +16,6 @@ import kotlinx.coroutines.tasks.await
 class AuthRepositories {
     private val firebaseAuth = FirebaseAuth.getInstance() //tạo instance cho firebase
     private val firebaseFireStore = FirebaseFirestore.getInstance()
-    private lateinit var googleSignInClient: GoogleSignInClient //khởi tạo đối tượng kêt nối với google
-    private val RC_SIGN_IN = 9001 // mã yêu cầu để nhận kết quả
 
     suspend fun updateRecentlyPlayed(userId: String, songId: String): Result<Unit> {
         return try {
@@ -35,18 +33,6 @@ class AuthRepositories {
     }
 
 
-    suspend fun getMyTracksByUserId(userId: String): List<SongModels> {
-        return try {
-            val snapshot = firebaseFireStore.collection("users")
-                .whereEqualTo("uid", userId) // Giả sử trường userId trong collection songs
-                .get()
-                .await()
-            snapshot.toObjects(SongModels::class.java)
-        } catch (e: Exception) {
-            Log.e("SongRepository", "Error fetching my tracks: ${e.message}")
-            emptyList()
-        }
-    }
     suspend fun updateUserName(userId: String, newName: String): Result<Unit> {
         return try {
             FirebaseFirestore.getInstance().collection("users")
@@ -74,6 +60,7 @@ class AuthRepositories {
                 uploadedSongs = emptyList(),
                 recentlyPlayed = emptyList(),
                 playlists = emptyList(),
+                playlistLiked = emptyList()
             )
             firebaseFireStore.collection("users").document(userId).set(userData).await()
             Result.success(Unit)
@@ -95,7 +82,7 @@ class AuthRepositories {
 
     suspend fun signInWithGoogle(idToken: String): Result<Unit> {
         return try {
-            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val credential = GoogleAuthProvider.getCredential(idToken, null) //tạo credential
             val task = firebaseAuth.signInWithCredential(credential).await()
             val user = task.user ?: throw Exception("Không lấy được user")
             checkAndCreateUserDocument(user)
@@ -120,7 +107,8 @@ class AuthRepositories {
                     provider = "google",
                     uploadedSongs = emptyList(),
                     recentlyPlayed = emptyList(),
-                    playlists = emptyList()
+                    playlists = emptyList(),
+                    playlistLiked = emptyList()
                 )
                 firebaseFireStore.collection("users").document(userId).set(userData).await()
                 Log.d("AuthRepository", "Tạo tài liệu người dùng mới: $userId")
@@ -133,20 +121,16 @@ class AuthRepositories {
         }
     }
 
-    suspend fun loadUser(userId: String): Result<UserModel?> {
+    suspend fun loadUser(userId: String): UserModel?{
         return try {
-            val document = firebaseFireStore.collection("users").document(userId).get().await()
-            if (document.exists()) {
-                val userData = document.toObject(UserModel::class.java)
-                Log.d("AuthRepository", "Tải user thành công: $userId")
-                Result.success(userData)
-            } else {
-                Log.w("AuthRepository", "Không tìm thấy tài liệu user: $userId")
-                Result.success(null)
-            }
+            firebaseFireStore.collection("users")
+                .document(userId)
+                .get()
+                .await()
+                .toObject(UserModel::class.java)
         } catch (e: Exception) {
             Log.e("AuthRepository", "Lỗi tải user: ${e.message}")
-            Result.failure(e)
+            null
         }
     }
 

@@ -22,7 +22,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="match_parent"
-                android:layout_height="630dp"
+                android:layout_height="640dp"
                 android:layout_gravity="top"
                 app:cardCornerRadius="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -32,7 +32,6 @@
 
                 <ImageView
                     android:id="@+id/imgThumbnails"
-
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
@@ -103,7 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@color/textColor2"
-            android:text="TextView" />
+            android:text="--:--" />
 
         <TextView
             android:id="@+id/txtTotal"
@@ -112,7 +111,7 @@
             android:layout_weight="1"
             android:gravity="end"
             android:textColor="@color/textColor2"
-            android:text="TextView" />
+            android:text="--:--" />
     </LinearLayout>
 
 </LinearLayout>

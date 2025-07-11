@@ -1,19 +1,12 @@
-package com.example.doan13.ui.activities
+package com.example.doan13
 
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.example.doan13.R
 import com.example.doan13.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 

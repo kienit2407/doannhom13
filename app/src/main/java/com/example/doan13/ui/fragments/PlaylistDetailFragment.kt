@@ -46,18 +46,7 @@ class PlaylistDetailFragment : Fragment() {
     private val favoriteViewModel: FavoriteViewModel by activityViewModels()
     private var thumbnailFile: File? = null
     var currentSongId: String? = null
-    private val updateThumbnailPlaylist = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                try {
-                    songViewModel.changeAvtPLaylist(uri, args.playlistId)
-                } catch (e: Exception) {
-                    Log.e("UploadFragment", "Error selecting thumbnail: ${e.message}")
-                }
-            }
-        }
-    }
-    // Trạng thái shuffle cho playlist này
+
     private var isShuffleEnabled = false
 
     override fun onCreateView(
@@ -141,18 +130,9 @@ class PlaylistDetailFragment : Fragment() {
         binding.ModifyName.setOnClickListener {
             showModifyNamePlaylistDialog()
         }
-        binding.imgPlaylist.setOnClickListener {
-            changeAvtPlaylist()
-        }
+
     }
 
-    private fun changeAvtPlaylist() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            type = "image/*"
-            addCategory(Intent.CATEGORY_OPENABLE)
-        }
-        updateThumbnailPlaylist.launch(intent)
-    }
 
     private fun setupObservers() {
         // Observe playlist data
@@ -166,6 +146,7 @@ class PlaylistDetailFragment : Fragment() {
                     .into(binding.imgPlaylist)
 
 
+                binding.txtLuotxem.text = playlist.playCount.toString()
                 val dateFormat = SimpleDateFormat("dd•MM•yyyy", Locale.getDefault())
                 binding.txtDate.text = "Created ${it.createdAt?.let { date -> dateFormat.format(date) } ?: "Unknown"}"
                 binding.txtmount.text = "${it.songIds.size} tracks"

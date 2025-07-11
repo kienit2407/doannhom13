@@ -21,13 +21,11 @@ class RegisterActivity : AppCompatActivity() {
         binding.btnRegister.setOnClickListener {
            val signup = Intent(this@RegisterActivity, SignUpActivity::class.java)
             startActivity(signup)
-
         }
 
         binding.btnSignIn.setOnClickListener {
             val signin = Intent(this@RegisterActivity, SignInActivity::class.java)
             startActivity(signin)
-
         }
     }
 }

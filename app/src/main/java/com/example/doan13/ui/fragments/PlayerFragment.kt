@@ -20,6 +20,8 @@ import com.example.doan13.R
 import com.example.doan13.databinding.DialogAddPlaylistBinding
 import com.example.doan13.databinding.DialogCreatePlaylistBinding
 import com.example.doan13.databinding.FragmentFullPlayerBinding
+import com.example.doan13.utilities.common.ToastCustom
+
 import com.example.doan13.viewmodels.MediaViewModel
 import com.example.doan13.viewmodels.FavoriteViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -115,7 +117,6 @@ class PlayerFragment : Fragment() {
     }
 
     private fun observeMediaState() {
-
         // Observe playing state
         mediaViewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
             // Start/stop rotation animation
@@ -124,8 +125,8 @@ class PlayerFragment : Fragment() {
 
         mediaViewModel.currentSong.observe(viewLifecycleOwner) { song ->
             song?.let {
-                binding.txtTitle.text = it.title
-                binding.txtArtist.text = it.artist
+                binding.txtTitle.text = it.title.split(" ").joinToString(" ") {it.replaceFirstChar { it.uppercase() }}
+                binding.txtArtist.text = it.artist.split(" ").joinToString(" ") {it.replaceFirstChar { it.uppercase() }}
                 Glide.with(this)
                     .load(it.thumbnailUrl)
                     .placeholder(R.drawable.user)
@@ -136,7 +137,6 @@ class PlayerFragment : Fragment() {
                     .placeholder(R.drawable.user)
                     .error(R.drawable.user)
                     .into(binding.imgAvatar)
-
 
                 updatePlayCount(it.songId)
             }
@@ -276,8 +276,9 @@ class PlayerFragment : Fragment() {
                     favoriteViewModel.addSongToPlaylist(selectedPlaylistId, songId)
                     favoriteViewModel.addSongToPlaylistResult.observe(viewLifecycleOwner) { result ->
                         if (result?.isSuccess == true) {
-                            Toast.makeText(context, "Đã thêm vào playlist!", Toast.LENGTH_SHORT)
-                                .show()
+//                            Toast.makeText(context, "Đã thêm vào playlist!", Toast.LENGTH_SHORT)
+//                                .show()
+                            ToastCustom.showCustomToast(requireContext(), "Đã thêm vào playlist!")
                             favoriteViewModel.resetaddPlaylistResult()
                             favoriteViewModel.resetLoadPlaylist()
                             dialog.dismiss()

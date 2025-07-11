@@ -20,6 +20,8 @@ import com.example.doan13.databinding.DialogAddPlaylistBinding
 import com.example.doan13.databinding.DialogCreatePlaylistBinding
 import com.example.doan13.databinding.FragmentHomeBinding
 import com.example.doan13.ui.adapters.HomeAdapter
+import com.example.doan13.utilities.common.ToastCustom
+
 import com.example.doan13.viewmodels.AuthViewModel
 import com.example.doan13.viewmodels.SongViewModel
 import com.example.doan13.viewmodels.FavoriteViewModel
@@ -39,6 +41,7 @@ class HomeFragment : Fragment() {
     private val songViewModel: SongViewModel by activityViewModels()
     private val favoriteViewModel: FavoriteViewModel by activityViewModels() // Thêm FavoriteViewModel
     private val mediaViewModel: MediaViewModel by activityViewModels()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,88 +54,36 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.VISIBLE
+
         @RequiresApi(Build.VERSION_CODES.O)
         fun getGreeting(): String {
             val currentTime = LocalTime.now()
             return when {
-                currentTime.isBefore(LocalTime.NOON) -> "Good Morning !"
-                currentTime.isBefore(LocalTime.of(18, 0)) -> "Good Afternoon !"
-                else -> "Good Night !"
+                currentTime.isBefore(LocalTime.NOON) -> "Good Morning !👋🏻"
+                currentTime.isBefore(LocalTime.of(18, 0)) -> "Good Afternoon !👋🏻"
+                else -> "Good Night !👋🏻"
             }
         }
-        val userId = authViewModel.getuserId() ?: return
         Log.d("HomeFragment", "Loading data for userId: $userId")
         binding.txtDear.text = getGreeting()
 
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            lifecycleScope.launch {
-                try {
-                    songViewModel.loadData1(userId)
-                } catch (e: Exception) {
-                    Log.e("TracksTabFragment", "Error loading tracks: ${e.message}")
-                }
-            }
-        }
+        setRecycleView()
+        setObserve()
+        setOnClick()
+
         lifecycleScope.launch {
             try {
+                //load data
                 songViewModel.loadData(userId)
+                authViewModel.loadUser(userId)
             } catch (e: Exception) {
                 Log.e("TracksTabFragment", "Error loading tracks: ${e.message}")
             }
         }
-        songViewModel.loading.observe(viewLifecycleOwner){isloading->
-            if (isloading){
-                binding.progressBar.visibility = View.VISIBLE
-            }else{
-                binding.progressBar.visibility = View.GONE
-                binding.swipeRefreshLayout.isRefreshing = false
-            }
-        }
-        //xử lí click
-        adapterMain = HomeAdapter(
-            onArtistClick = { artistId ->
-                val action = HomeFragmentDirections.actionHomeFragmentToPublicProfileFragment(artistId)
-                findNavController().navigate(action)
-                        activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.GONE
-            },
-            onSongClick = { songId ->
-                // Phát bài hát cụ thể từ playlist
-                authViewModel.updateRecentlyPlayed(userId, songId) // Gọi từ ViewModel
-                mediaViewModel.setSongAndPlay(songId)
-                favoriteViewModel.updatePlayCount(songId)
-                showMiniPlayer()
-            },
-            onPlaylistClick = { playlistId ->
-                favoriteViewModel.updatePlayCountOfPlaylist(playlistId)
-                val action = HomeFragmentDirections.actionHomeFragmentToPublicPlaylistDetailFragment(playlistId)
-                findNavController().navigate(action)
-            },
-            onAddToPlaylistClick = {
-                    songId -> showAddToPlaylistDialog(songId) },
-            songViewModel = songViewModel,
-        )
 
-        binding.rvHomeMain.layoutManager = LinearLayoutManager(context)
-        binding.rvHomeMain.adapter = adapterMain
+    }
 
-        authViewModel.loadUser()
-        authViewModel.documentData.observe(viewLifecycleOwner) { data ->
-            binding.txtName.text = data?.name?.split(" ")?.joinToString(" ") { it.replaceFirstChar { it.uppercase() } } ?: "Không xác định"
-            if (data?.imageUrl != null) {
-                Glide.with(this).load(data.imageUrl).into(binding.imgCart)
-            } else {
-                binding.imgCart.setImageResource(R.drawable.user)
-            }
-        }
-        authViewModel.userInfo.observe(viewLifecycleOwner) { info ->
-            if (info != null) {
-                binding.txtName.text = info
-            }
-        }
-        authViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
-            error?.let { binding.txtName.text = "Lỗi: $it" }
-        }
-
+    private fun setOnClick() {
         binding.addButton.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_uploadFragment)
 
@@ -141,12 +92,44 @@ class HomeFragment : Fragment() {
         binding.imgCart.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_profile)
         }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            lifecycleScope.launch {
+                try {
+                    songViewModel.loadDataWipe(userId)
+                } catch (e: Exception) {
+                    Log.e("TracksTabFragment", "Error loading tracks: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun setObserve() {
+        songViewModel.loading.observe(viewLifecycleOwner){isloading->
+            if (isloading){
+                binding.progressBar.visibility = View.VISIBLE
+            }else{
+                binding.progressBar.visibility = View.GONE
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+        }
+
+        authViewModel.userData.observe(viewLifecycleOwner) { data ->
+            binding.txtName.text = data?.name?.split(" ")?.joinToString(" ") { it.replaceFirstChar { it.uppercase() } } ?: "Không xác định"
+            if (data?.imageUrl != null) {
+                Glide.with(this).load(data.imageUrl).into(binding.imgCart)
+            } else {
+                binding.imgCart.setImageResource(R.drawable.user)
+            }
+        }
+
         favoriteViewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
 
             result?.let {
                 when {
                     it.isSuccess -> {
-                        Toast.makeText(context, "Playlist created!", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, "", Toast.LENGTH_SHORT).show()
+                        ToastCustom.showCustomToast(requireContext(), "Playlist created!")
                         favoriteViewModel.loadPlaylists(userId) // Cập nhật lại danh sách
                     }
                     it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
@@ -155,8 +138,17 @@ class HomeFragment : Fragment() {
 
             }
         }
+        favoriteViewModel.addPLaylistToPlaylistResult.observe(viewLifecycleOwner){ result->
+            result?.let {
+                if(it.isSuccess){
+                    favoriteViewModel.loadPlaylists(userId)
+//                    Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT).show()
+                    ToastCustom.showCustomToast(requireContext(), "Đã thêm vào playlist!")
+                    favoriteViewModel.resetaddPlaylisttopLAYLISTResult()
+                }
+            }
 
-
+        }
 
         lifecycleScope.launch {
             songViewModel.recentSongs.observe(viewLifecycleOwner) { updateAdapter() }
@@ -166,6 +158,37 @@ class HomeFragment : Fragment() {
             songViewModel.recommendedTracks.observe(viewLifecycleOwner) { updateAdapter() }
             songViewModel.recommendedPlaylists.observe(viewLifecycleOwner) { updateAdapter() }
         }
+    }
+
+    private fun setRecycleView() {
+        //xử lí click
+        adapterMain = HomeAdapter(
+            onArtistClick = { artistId ->
+                val action = HomeFragmentDirections.actionHomeFragmentToPublicProfileFragment(artistId)
+                findNavController().navigate(action)
+                activity?.findViewById<View>(R.id.bottomNavigation)?.visibility = View.GONE
+            },
+            onSongClick = { songId ->
+                // Phát bài hát cụ thể từ playlist
+                authViewModel.updateRecentlyPlayed(userId, songId) // Gọi từ ViewModel
+                mediaViewModel.setSongAndPlay(songId)
+                favoriteViewModel.updatePlayCount(songId)
+                showMiniPlayer()
+            },
+            onPlaylistClick = { playlistId ->
+                val action = HomeFragmentDirections.actionHomeFragmentToPublicPlaylistDetailFragment(playlistId)
+                findNavController().navigate(action)
+            },
+            onAddToPlaylistClick = {
+                    songId -> showAddToPlaylistDialog(songId) },
+            songViewModel = songViewModel,
+            onAddToPlaylistUserClick = {playlistId->
+                favoriteViewModel.addPlaylistToPlaylist(playlistId, userId)
+            }
+        )
+
+        binding.rvHomeMain.layoutManager = LinearLayoutManager(context)
+        binding.rvHomeMain.adapter = adapterMain
     }
 
     private fun updateAdapter() {
@@ -223,8 +246,9 @@ class HomeFragment : Fragment() {
                     favoriteViewModel.addSongToPlaylist(selectedPlaylistId, songId)
                     favoriteViewModel.addSongToPlaylistResult.observe(viewLifecycleOwner) { result ->
                         if (result?.isSuccess == true) {
-                            Toast.makeText(context, "Đã thêm vào playlist!", Toast.LENGTH_SHORT)
-                                .show()
+//                            Toast.makeText(context, "Đã thêm vào playlist!", Toast.LENGTH_SHORT)
+//                                .show()
+                            ToastCustom.showCustomToast(requireContext(), "Đã thêm vào playlist!")
                             favoriteViewModel.resetaddPlaylistResult()
                             favoriteViewModel.resetLoadPlaylist()
                             dialog.dismiss()
@@ -258,8 +282,9 @@ class HomeFragment : Fragment() {
             dialogBinding.btnCreate.setOnClickListener {
                 val name = dialogBinding.edtNamePlaylist.text.toString()
                 if (name.isBlank()) {
-                    Toast.makeText(context, "Please enter a playlist name", Toast.LENGTH_SHORT)
-                        .show()
+                    ToastCustom.showCustomToast(requireContext(), "Please enter a playlist name!")
+//                    Toast.makeText(context, "Please enter a playlist name", Toast.LENGTH_SHORT)
+//                        .show()
                     return@setOnClickListener
                 }
 

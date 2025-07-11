@@ -70,18 +70,18 @@
 
 
             <LinearLayout
-                android:layout_width="214dp"
-                android:layout_height="74dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:layout_marginRight="20dp"
                 android:gravity="left"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:id="@+id/ModifyName"
                     android:layout_width="wrap_content"
-                    android:layout_height="35dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="left"
-                    android:layout_marginVertical="5dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -110,33 +110,33 @@
                     android:text="Email nè"
                     android:textColor="@color/textColor2"
                     android:textSize="14sp" />
+                <LinearLayout
+                    android:layout_width="67dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:id="@+id/textView12"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Tracks"
+                        android:textColor="@color/textColor2"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txtAmount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="0"
+                        android:textColor="@color/textColor2" />
+                </LinearLayout>
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="67dp"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/textView12"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="Tracks"
-                    android:textColor="@color/textColor2"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txtAmount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/textColor2" />
-            </LinearLayout>
 
         </LinearLayout>
 
@@ -146,7 +146,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="8dp"
             android:gravity="center"
-            android:text="Your Tracks"
+            android:text="Tracks Of Chill"
             android:textColor="@color/textColor2"
             android:textSize="18dp"
             android:textStyle="bold" />
@@ -182,10 +182,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="You not have any songs"
+        android:text="Not have any song!"
         android:textColor="@color/textState"
         android:textSize="20sp"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

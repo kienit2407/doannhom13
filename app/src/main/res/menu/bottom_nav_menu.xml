@@ -7,20 +7,20 @@
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/home_24px"
-        android:title="Home" />
+        android:title="Trang chủ" />
 
     <item
         android:id="@+id/nav_favorites"
         android:icon="@drawable/favorite_24px"
-        android:title="Libary" />
+        android:title="Danh sách phát" />
 
     <item
         android:id="@+id/nav_search"
         android:icon="@drawable/search_24px"
-        android:title="Search" />
+        android:title="Tìm kiếm" />
 
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/person_24px"
-        android:title="Profile" />
+        android:title="Cá nhân" />
 </menu>

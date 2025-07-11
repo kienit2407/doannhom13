@@ -18,34 +18,37 @@
         android:padding="5dp"
         app:srcCompat="@drawable/chevron_left_20px"
         android:background="@drawable/input_custom"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="200dp"
-        app:cardCornerRadius="100dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="30dp"
-        android:background="@drawable/input_custom2">
-
-        <ImageView
-            android:id="@+id/imgThumbnails"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+    <FrameLayout
+        android:layout_width="210dp"
+        android:layout_height="210dp"
+        android:background="@drawable/avatar_gradient_border">
+        <androidx.cardview.widget.CardView
             android:layout_gravity="center"
-            android:background="@android:color/transparent"
-            android:contentDescription="Thumbnail Preview"
-            android:scaleType="centerCrop"
-             />
+            android:layout_width="200dp"
+            app:cardCornerRadius="100dp"
+            android:layout_height="200dp"
+            android:background="@drawable/input_custom2">
 
-        <ImageView
-            android:id="@+id/imgIcon"
-            android:layout_width="34dp"
-            android:layout_height="36dp"
-            android:layout_gravity="center"
-            android:background="@android:color/transparent"
-            android:contentDescription="Thumbnail Preview"
-            android:scaleType="centerCrop"
-            android:src="@drawable/add_photo" />
-    </androidx.cardview.widget.CardView>
+            <ImageView
+                android:id="@+id/imgThumbnails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="Thumbnail Preview"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/imgIcon"
+                android:layout_width="34dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="Thumbnail Preview"
+                android:scaleType="centerCrop"
+                android:src="@drawable/add_photo" />
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/textViewThumbnailStatus"

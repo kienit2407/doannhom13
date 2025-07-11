@@ -40,28 +40,21 @@ class AuthViewModel @Inject constructor(
     val loginSuccess = MutableLiveData<Boolean>()
     val errorMessage = MutableLiveData<String?>()
     val signOutSuccess = MutableLiveData<Boolean>()
-    val documentData = MutableLiveData<UserModel?>()
-    val userInfo = MutableLiveData<String>()
     val resetSuccess = MutableLiveData<Boolean>()
-    val creatorName = MutableLiveData<String>()
     val recentlyPlayedUpdated = MutableLiveData<Boolean>() // Thêm LiveData cho trạng thái cập nhật
     val stateModifyName = MutableLiveData<Boolean>() // Thêm LiveData cho trạng thái cập nhật
-    private val _userInfoPublic = MutableLiveData<UserModel?>()
-    val userInfoPublic: LiveData<UserModel?> get() = _userInfoPublic
-    private val _myTracks = MutableLiveData<List<SongModels>>()
-    val myTracks: LiveData<List<SongModels>> get() = _myTracks
+
+    private val _userData = MutableLiveData <UserModel?>()
+    val userData: LiveData <UserModel?> get() = _userData
+
+    private val _userDataOrther = MutableLiveData <UserModel?>()
+    val userDataOrther: LiveData <UserModel?> get() = _userDataOrther
+
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
 
-// Lấy danh sách bài hát của người dùng
-    fun getMyTracksByUserId(userId: String) {
-        viewModelScope.launch {
-            val tracks = authRepository.getMyTracksByUserId(userId)
-            _myTracks.postValue(tracks)
-        }
-    }
     // Lấy danh sách bài hát mà người dùng đã đăng dựa trên userId
     fun updateRecentlyPlayed(userId: String, songId: String) {
         viewModelScope.launch {
@@ -71,21 +64,25 @@ class AuthViewModel @Inject constructor(
                 Log.d("AuthViewModel", "Cập nhật recentlyPlayed thành công cho $userId với $songId")
             } else {
                 errorMessage.postValue(result.exceptionOrNull()?.message)
-                Log.e("AuthViewModel", "Lỗi cập nhật recentlyPlayed: ${result.exceptionOrNull()?.message}")
+                Log.e(
+                    "AuthViewModel",
+                    "Lỗi cập nhật recentlyPlayed: ${result.exceptionOrNull()?.message}"
+                )
             }
         }
     }
 
     fun modifyName(userId: String, newName: String) {
         viewModelScope.launch {
-           authRepository.updateUserName(userId, newName)
+            authRepository.updateUserName(userId, newName)
             stateModifyName.postValue(true)
         }
     }
 
-    fun getuserId(): String?{
+    fun getuserId(): String? {
         return authRepository.getCurrentUserId()
     }
+
     fun initGoogle(context: Context) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.clientId))
@@ -138,23 +135,17 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun loadUser() {
+    fun loadUser(userId: String) {
         _loading.value = true
         viewModelScope.launch {
-            val userId = authRepository.getCurrentUserId()
-            if (userId != null) {
-                val result = authRepository.loadUser(userId)
-                if (result.isSuccess) {
-                    documentData.postValue(result.getOrNull())
-                    if (result.getOrNull() == null) {
-                        userInfo.postValue("Không tìm thấy user")
-                    }
-                } else {
-                    errorMessage.postValue(result.exceptionOrNull()?.message)
-                }
-            } else {
-                userInfo.postValue("Chưa có người dùng đăng nhập")
-            }
+            _userData.value = authRepository.loadUser(userId)
+            _loading.value = false
+        }
+    }
+    fun loadUserOther(userId: String) {
+        _loading.value = true
+        viewModelScope.launch {
+            _userDataOrther.value = authRepository.loadUser(userId)
             _loading.value = false
         }
     }
@@ -164,7 +155,6 @@ class AuthViewModel @Inject constructor(
         _loading.value = true
         viewModelScope.launch {
             authRepository.signOut()
-            googleSignInClient.signOut()
             signOutSuccess.postValue(true)
             _loading.value = false
         }
@@ -183,6 +173,16 @@ class AuthViewModel @Inject constructor(
             _loading.value = false
         }
     }
+
+    //reset
+    fun resetloadUserOther(){
+        _userDataOrther.value = null
+    }
+
+
+
+
+}
 //    //Lưu trữ và quản lý các dữ liệu của ui
 //    //Bảo tồn dữ liệu khi có tác đụng ví dụ xoay màn hình
 //    //ViewModel gắn với lifecycle của activity/fragment thông qua viewmodelProvider và nó chỉ bị huỷ khi mà 2 cái đó bị huỷ mà thôi
@@ -337,4 +337,4 @@ class AuthViewModel @Inject constructor(
 
 
 
-}
+//}

@@ -43,12 +43,12 @@ class SongRepositories {
 
 //            / Tải thumbnail lên Cloudinary (0% - 50%)
             val thumbnailUrl = uploadToCloudinary(thumbnail.absolutePath, "image") { progress ->
-                onProgress((progress * 0.5).toInt()) // Cập nhật 50% cho thumbnail
+                onProgress((progress * 0.25).toInt()) // Cập nhật 50% cho thumbnail
             } ?: throw Exception("Không tải được thumbnail")
 
             // Tải MP3 lên Cloudinary (50% - 100%)
             val mp3Url = uploadToCloudinary(mp3File.absolutePath, "raw") { progress ->
-                onProgress(50 + (progress * 0.5).toInt()) // Cập nhật 50% còn lại cho MP3
+                onProgress(25 + (progress * 0.75).toInt()) // Cập nhật 50% còn lại cho MP3
             } ?: throw Exception("Không tải được MP3")
             // Lưu thông tin bài hát vào Firestore
 
@@ -157,23 +157,27 @@ class SongRepositories {
     suspend fun getRecentSongs(userId: String,): List<SongModels> {
         return try {
             val userDoc = db.collection("users").document(userId).get().await() //lấy ra doc của user
-            val songIds = userDoc.get("recentlyPlayed") as? List<String> ?: emptyList() // truy cập vào field recent để lấy ra
-            //dánh sách các id bài hát gần đây
+            val user = userDoc.toObject(UserModel::class.java) // truy cập vào field recent để lấy ra
 
-            val recentSongIds = songIds.take(20) //lấy ra 20 bài trước
-            val chunks = recentSongIds.chunked(10)
-            val songs = mutableListOf<SongModels>()
+            val songRecent = user?.recentlyPlayed ?: emptyList()
 
-            chunks.forEach { chunk ->
-                val chunkResults = db.collection("songs")
-                    .whereIn("songId", chunk)
+            if (songRecent.isNotEmpty()) {
+                val songsQuery = db.collection("songs")
+                    .whereIn("songId", songRecent)
                     .get()
                     .await()
-                    .toObjects(SongModels::class.java)
-                songs.addAll(chunkResults)
+
+                val songs = songsQuery.toObjects(SongModels::class.java)
+                songs.sortedByDescending { songRecent.indexOf(it.songId)}
+
+                Log.d("SongRepository", "Songs retrieved: ${songs.size}")
+
+                songs
+            } else {
+                Log.d("SongRepository", "No uploaded songs found")
+                emptyList()
             }
-            // Sắp xếp lại theo thứ tự trong recentSongIds
-            songs.sortedByDescending { recentSongIds.indexOf(it.songId)}
+
         } catch (e: Exception) {
             Log.e("SongRepositories", "Lỗi khi lấy bài hát gần đây: ${e.message}")
             emptyList()
@@ -187,6 +191,7 @@ class SongRepositories {
                 .get()
                 .await()
                 .toObjects(UserModel::class.java)
+                .shuffled()
         } catch (e: Exception) {
             Log.e("SongRepositories", "Error getting artists: ${e.message}")
             emptyList()
@@ -214,11 +219,13 @@ class SongRepositories {
          val playlists = db.collection("playlists")
                 .whereNotEqualTo("creatorId", currentUserId) // Lọc playlist của người dùng khác
                 .orderBy("playCount", Query.Direction.DESCENDING)
+                .limit(10)
                 .get()
                 .await()
                 .toObjects(PlaylistModel::class.java)
 
             playlists.filter { it.songIds.size >=2 }
+                .distinctBy { it.playlistId }
         } catch (e: Exception) {
             Log.e("SongRepositories", "Error getting popular playlists: ${e.message}")
             emptyList()
@@ -230,7 +237,6 @@ class SongRepositories {
             db.collection("songs")
                 .whereNotEqualTo("userId", currentUserId) // Lọc bài hát của người dùng khác
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(10)
                 .get()
                 .await()
                 .toObjects(SongModels::class.java)
@@ -252,6 +258,7 @@ class SongRepositories {
                 .toObjects(PlaylistModel::class.java)
                 .shuffled() // Xáo trộn để thay thế "random"
             playlists.filter { it.songIds.size >=2 }
+                .distinctBy { it.playlistId }
         } catch (e: Exception) {
             Log.e("SongRepositories", "Error getting recommended playlists: ${e.message}")
             emptyList()
@@ -284,6 +291,7 @@ class SongRepositories {
                 .documents
                 .mapNotNull { it.toObject(PlaylistModel::class.java) }
             playlists.filter { it.songIds.size >=2 }
+                .distinctBy { it.playlistId }
         } catch (e: Exception) {
             println("Lỗi lấy tất cả playlist: ${e.message}")
             emptyList()
@@ -317,61 +325,30 @@ class SongRepositories {
             null
         }
     }
-    suspend fun getSongsInPlaylist(playlistId: String): List<SongModels> {
-        val playlist = db.collection("playlists").document(playlistId).get().await()
-            .toObject(PlaylistModel::class.java)
-        return if (playlist != null && playlist.songIds.isNotEmpty()) {
-            db.collection("songs")
-                .whereIn("songId", playlist.songIds)
-                .get()
-                .await()
-                .toObjects(SongModels::class.java)
-        } else {
-            emptyList()
-        }
-    }
-    suspend fun getSongsByUser(userId: String): List<SongModels> {
-        return try {
-            db.collection("songs")
-                .whereEqualTo("uid", userId) // Lọc theo userId
-                .get()
-                .await()
-                .toObjects(SongModels::class.java)
-        } catch (e: Exception) {
-            Log.e("SongViewModel", "Error fetching songs by user: ${e.message}")
-            emptyList()
-        }
-    }
-    // Lấy thông tin người dùng dựa trên userId
-    suspend fun getUserById(userId: String): UserModel? {
-        return try {
-            val snapshot = db.collection("users")
-                .whereEqualTo("uid", userId)
-                .get()
-                .await()
-            snapshot.documents.firstOrNull()?.toObject(UserModel::class.java)
-        } catch (e: Exception) {
-            Log.e("SongRepository", "Error fetching user: ${e.message}")
-            null
-        }
-    }
 
-    suspend fun getSongsByIds(songIds : List<String>): List<SongModels> {
+
+    suspend fun getSongsByUserUploaded(userId: String): List<SongModels> {
         return try {
-            if (songIds.isNotEmpty()) {
-                db.collection("songs")
-                    .whereIn("songId", songIds)
+            val userDoc = db.collection("users").document(userId).get().await()
+            val user = userDoc.toObject(UserModel::class.java)
+            val songUploadedIds = user?.uploadedSongs ?: emptyList()
+            if (songUploadedIds.isNotEmpty()) {
+                 db.collection("songs")
+                    .whereIn("songId", songUploadedIds)
+                    .orderBy("createdAt", Query.Direction.DESCENDING)
                     .get()
                     .await()
                     .toObjects(SongModels::class.java)
             } else {
+                Log.d("SongRepository", "No uploaded songs found")
                 emptyList()
             }
         } catch (e: Exception) {
-            Log.e("SongRepository", "Error fetching songs: ${e.message}")
+            Log.e("SongRepository", "Error fetching songs: ${e.message}", e)
             emptyList()
         }
     }
+
     // Xóa bài hát khỏi playlist
     suspend fun removeSong(userId: String, songId: String): Result<Unit> {
         return try {
@@ -383,46 +360,8 @@ class SongRepositories {
             Result.failure(e)
         }
     }
-    suspend fun updateAvt(newImgUrl: Uri): Result<Unit> {
-        return try {
-            if (userId != null) {
-                FirebaseFirestore.getInstance().collection("users")
-                    .document(userId)
-                    .update("imageUrl", newImgUrl)
-                    .await()
-            }
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("Repository", "Lỗi cập nhật tên: ${e.message}")
-            Result.failure(e)
-        }
-    }
-    suspend fun updateAvtTracks(newImgUrl: Uri, songId: String): Result<Unit> {
-        return try {
 
-                FirebaseFirestore.getInstance().collection("songs")
-                    .document(songId)
-                    .update("thumbnailUrl", newImgUrl)
-                    .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("Repository", "Lỗi cập nhật tên: ${e.message}")
-            Result.failure(e)
-        }
-    }
-    suspend fun updateAvtPlaylist(newImgUrl: Uri, playlistId: String): Result<Unit> {
-        return try {
 
-                FirebaseFirestore.getInstance().collection("playlists")
-                    .document(playlistId)
-                    .update("thumbnailUrl", newImgUrl)
-                    .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("Repository", "Lỗi cập nhật tên: ${e.message}")
-            Result.failure(e)
-        }
-    }
 
 
 

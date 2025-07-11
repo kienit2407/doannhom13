@@ -54,7 +54,7 @@ class ProfileMyTrackApdapter (
                 binding.txtArtist.text = userName.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }}
 
             }
-            binding.txtLuotxem.text = song.playCount.toString()
+            binding.txtLuotxem.text = "${song.playCount} Lượt nghe"
             binding.imgbuttonAddPlaylist.setOnClickListener{
                 onSAddPlaylist(song.songId)
             }

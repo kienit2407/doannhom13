@@ -1,17 +1,21 @@
 package com.example.doan13.ui.activities
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.doan13.MainActivity
 import com.example.doan13.R
 import com.example.doan13.data.models.auth.CreateUserModel
 import com.example.doan13.databinding.ActivitySignUpBinding
+import com.example.doan13.databinding.ToastCustomBinding
 import com.example.doan13.viewmodels.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
@@ -21,20 +25,23 @@ import dagger.hilt.android.AndroidEntryPoint
 class SignUpActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     private lateinit var binding: ActivitySignUpBinding
-    private lateinit var firebaseAuth : FirebaseAuth
+    private lateinit var firebaseAuth: FirebaseAuth
     private var isHide = false
-    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(Exception::class.java)
-                authViewModel.signInWithGoogle(account.idToken!!)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Lỗi khi lấy tài khoản: ${e.message}", Toast.LENGTH_LONG).show()
+    private val signInLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                try {
+                    val account = task.getResult(Exception::class.java)
+                    authViewModel.signInWithGoogle(account.idToken!!)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Lỗi khi lấy tài khoản: ${e.message}", Toast.LENGTH_LONG)
+                        .show()
+                }
             }
         }
-    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
@@ -54,21 +61,24 @@ class SignUpActivity : AppCompatActivity() {
 
         authViewModel.registrationSuccess.observe(this) { success ->
             if (success) {
-                Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Đăng ký thành công!")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
         }
         authViewModel.loginSuccess.observe(this) { success ->
             if (success) {
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Đăng nhập thành công!")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
         }
         authViewModel.errorMessage.observe(this) { error ->
             error?.let {
-                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Tài khoản đã tồn tại, vui lòng đăng nhập!")
+//                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             }
         }
         binding.imgVisibility.setOnClickListener {
@@ -76,11 +86,13 @@ class SignUpActivity : AppCompatActivity() {
 
             if (isHide) {
                 // Hiện mật khẩu
-                binding.editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                binding.editPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                 binding.imgVisibility.setImageResource(R.drawable.visibility_on)
             } else {
                 // Ẩn mật khẩu
-                binding.editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                binding.editPassword.inputType =
+                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 binding.imgVisibility.setImageResource(R.drawable.visibility_off)
             }
 
@@ -94,25 +106,30 @@ class SignUpActivity : AppCompatActivity() {
             val fullName = binding.edtFullname.text.toString().trim()
             val confirmPass = binding.editConfirm.text.toString().trim()
             if (email.isBlank() || password.isBlank() || fullName.isBlank()) {
-                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Vui lòng điền đầy đủ thông tin!")
                 return@setOnClickListener
             }
             if (password.length < 6) {
-                Toast.makeText(this, "Mật khẩu phải ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Mật khẩu phải ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Mật khẩu phải ít nhất 6 ký tự!")
                 return@setOnClickListener
             }
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show()
+                showCustomToast(this, "Email không hợp lệ!")
                 return@setOnClickListener
             }
             if (password != confirmPass) {
-                Toast.makeText(this, "Mật khẩu không khớp. Vui lòng thử lại!", Toast.LENGTH_SHORT)
-                    .show()
+//                Toast.makeText(this, "Mật khẩu không khớp. Vui lòng thử lại!", Toast.LENGTH_SHORT)
+//                    .show()
+                showCustomToast(this, "Mật khẩu không khớp. Vui lòng thử lại!")
                 return@setOnClickListener
             }
-            if(!binding.cbConfirm.isChecked){
-                Toast.makeText(this, "Vui lòng đồng ý", Toast.LENGTH_SHORT)
-                    .show()
+            if (!binding.cbConfirm.isChecked) {
+//                Toast.makeText(this, "Vui lòng đồng ý", Toast.LENGTH_SHORT)
+//                    .show()
+                showCustomToast(this, "Vui lòng đồng ý!")
                 return@setOnClickListener
             }
             authViewModel.register(
@@ -123,17 +140,33 @@ class SignUpActivity : AppCompatActivity() {
                 )
             )
         }
-       authViewModel.loading.observe(this){isLoaded ->
-            if (isLoaded){
+        authViewModel.loading.observe(this) { isLoaded ->
+            if (isLoaded) {
                 binding.progressBar.visibility = View.VISIBLE
-            }
-            else{
+            } else {
                 binding.progressBar.visibility = View.GONE
             }
         }
         binding.btnSignUpWithGG.setOnClickListener {
             signInLauncher.launch(authViewModel.getSignInIntent())
         }
+    }
+    fun showCustomToast(context: Context, message: String) {
+        // Inflate layout với View Binding
+        val binding = ToastCustomBinding.inflate(LayoutInflater.from(context))
+
+        // Gán nội dung cho TextView
+        binding.message.text = message
+
+        // Tạo Toast
+        val toast = Toast(context)
+        toast.duration = Toast.LENGTH_SHORT
+        toast.view = binding.root // Sử dụng root view từ binding
+        toast.show()
+    }
+}
+
+
 //        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java) // instance view model sẽ liên kết với activity/fragmetn này
 //        //tránh trường hợp khi xoay màn hình thì bị mất dữ liêu. đảm bảo nso chỉ bị huỷ khi activity/fragment đó bị huỷ
 //        binding.btnBack.setOnClickListener {
@@ -244,5 +277,5 @@ class SignUpActivity : AppCompatActivity() {
 //            }
 //        }
 //    }
-    }
-}
+//    }
+//}

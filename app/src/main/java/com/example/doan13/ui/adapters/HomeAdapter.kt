@@ -23,6 +23,8 @@ class HomeAdapter(
     private val onSongClick: (String) -> Unit, //bấm vào bài hát
     private val onPlaylistClick: (String) -> Unit, //bấm vào vào playlist
     private val onAddToPlaylistClick: (String) -> Unit, //bấm vào thêm playlist
+    private val onAddToPlaylistUserClick: (String) -> Unit, //bấm vào thêm playlist
+
     private val songViewModel: SongViewModel
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
@@ -87,7 +89,7 @@ class HomeAdapter(
             }
             TYPE_POPULAR_PLAYLISTS -> {
                 val binding = ItemPopularPlaylistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                PopularPlaylistsViewHolder(binding, onPlaylistClick, songViewModel)
+                PopularPlaylistsViewHolder(binding, onPlaylistClick, songViewModel, onAddToPlaylistUserClick)
             }
             TYPE_RECOMMENDED_TRACKS -> {
                 val binding = ItemRecommendedTracksBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -95,7 +97,7 @@ class HomeAdapter(
             }
             TYPE_RECOMMENDED_PLAYLISTS -> {
                 val binding = ItemRecommendedPlaylistsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                RecommendedPlaylistsViewHolder(binding, onPlaylistClick, songViewModel)
+                RecommendedPlaylistsViewHolder(binding, onPlaylistClick, songViewModel, onAddToPlaylistUserClick)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -150,7 +152,7 @@ class HomeAdapter(
             val adapter = SongAdapter(onSongClick, onAddToPlaylistClick, songViewModel)
             binding.rvNewTrack.layoutManager = GridLayoutManager(
                 binding.root.context,
-                2,
+                3,
                 GridLayoutManager.HORIZONTAL,
                 false
             )
@@ -162,10 +164,11 @@ class HomeAdapter(
     class PopularPlaylistsViewHolder(
         private val binding: ItemPopularPlaylistBinding,
         private val onPlaylistClick: (String) -> Unit,
-        private val songViewModel: SongViewModel
+        private val songViewModel: SongViewModel,
+        private val onAddToPlaylistUserClick: (String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(playlists: List<PlaylistModel>) {
-            val adapter = PlaylistAdapter(onPlaylistClick, songViewModel =songViewModel )
+            val adapter = PlaylistAdapter(onPlaylistClick, songViewModel =songViewModel, onAddToPlaylistUserClick )
             binding.rvPopularPlaylists.layoutManager = LinearLayoutManager(binding.root.context, LinearLayoutManager.HORIZONTAL, false)
             binding.rvPopularPlaylists.adapter = adapter
             adapter.setPlaylists(playlists)
@@ -182,7 +185,7 @@ class HomeAdapter(
             val adapter = SongAdapter(onSongClick, onAddToPlaylistClick, songViewModel)
             binding.rvRecommendedTrack.layoutManager = GridLayoutManager(
                 binding.root.context,
-                2,
+                3,
                 GridLayoutManager.HORIZONTAL,
                 false
             )
@@ -194,10 +197,11 @@ class HomeAdapter(
     class RecommendedPlaylistsViewHolder(
         private val binding: ItemRecommendedPlaylistsBinding,
         private val onPlaylistClick: (String) -> Unit,
-       private val songViewModel: SongViewModel
+       private val songViewModel: SongViewModel,
+        private val onAddToPlaylistUserClick: (String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(playlists: List<PlaylistModel>) {
-            val adapter = PlaylistAdapter(onPlaylistClick, songViewModel)
+            val adapter = PlaylistAdapter(onPlaylistClick, songViewModel, onAddToPlaylistUserClick)
             binding.rvRecommendedPlaylist.layoutManager = LinearLayoutManager(binding.root.context, LinearLayoutManager.HORIZONTAL, false)
             binding.rvRecommendedPlaylist.adapter = adapter
             adapter.setPlaylists(playlists)

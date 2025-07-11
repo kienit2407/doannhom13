@@ -72,8 +72,8 @@ class MiniPlayerFragment : Fragment() {
         // Observe current song
         mediaViewModel.currentSong.observe(viewLifecycleOwner) { song ->
             song?.let {
-                binding.txtTitle.text = it.title
-                binding.txtArtist.text = it.artist
+                binding.txtTitle.text = it.title.split(" ").joinToString(" ") {it.replaceFirstChar { it.uppercase() }}
+                binding.txtArtist.text = it.artist.split(" ").joinToString(" ") {it.replaceFirstChar { it.uppercase() }}
                 // Load album art
                 Glide.with(this)
                     .load(it.thumbnailUrl)

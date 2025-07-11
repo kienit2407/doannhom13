@@ -221,7 +221,7 @@
                     android:gravity="start"
                     android:text="@string/underlined_button_text_signin"
                     android:textAllCaps="false"
-                    android:textColor="@color/primaryColor"
+                    android:textColor="#43E1D2"
                     android:textSize="18dp" />
             </LinearLayout>
 

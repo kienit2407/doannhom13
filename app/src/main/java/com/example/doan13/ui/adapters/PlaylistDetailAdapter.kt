@@ -57,7 +57,7 @@ class PlaylistDetailAdapter(
                 onSongClick(song.songId)
             }
 
-            binding.txtLuotxem.text = song.playCount.toString()
+            binding.txtLuotxem.text = "${song.playCount} Lượt nghe"
             binding.imgbuttonDelete.setOnClickListener {
                 onDeleteClick(song.songId)
             }

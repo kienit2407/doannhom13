@@ -4,8 +4,10 @@ import android.util.Log
 import com.example.doan13.data.models.songs.PlaylistModel
 import com.example.doan13.data.models.auth.UserModel
 import com.example.doan13.data.models.songs.SongModels
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.random.Random
@@ -53,7 +55,6 @@ class FavoriteRepositories @Inject constructor() {
             val playlistDoc = db.collection("playlists").document(playlistId).get().await()
             val playlist = playlistDoc.toObject(PlaylistModel::class.java)
                 ?: throw Exception("Playlist không tồn tại")
-
             // Lấy danh sách songIds hiện tại
             val currentSongIds = playlist.songIds.toMutableList() ?: mutableListOf()
             if (!currentSongIds.contains(songId)) {
@@ -80,6 +81,33 @@ class FavoriteRepositories @Inject constructor() {
             Result.failure(e)
         }
     }
+    suspend fun addUserToPlaylist(playlistId: String, userId: String): Result<Unit> {
+        return try {
+            val userDocRef = db.collection("users").document(userId)
+            val userPlaylistDoc = userDocRef.get().await()
+            val userPlaylist = userPlaylistDoc.toObject(UserModel::class.java)
+                ?: throw Exception("User không tồn tại")
+
+            // Lấy danh sách playlist hiện tại
+            val currentPlaylists = userPlaylist.playlistLiked.toMutableList()
+
+            // Kiểm tra xem playlist đã tồn tại chưa
+            if (!currentPlaylists.contains(playlistId)) {
+                currentPlaylists.add(playlistId)
+                // CẬP NHẬT LẠI VÀO FIRESTORE
+                userDocRef.update("playlistLiked", currentPlaylists).await()
+
+                Log.d("SongRepository", "Thêm playlist $playlistId vào user $userId thành công")
+                Result.success(Unit)
+            } else {
+                Log.d("SongRepository", "Playlist $playlistId đã tồn tại trong danh sách của user")
+                Result.success(Unit) // Hoặc có thể return Result.failure nếu muốn báo lỗi
+            }
+        } catch (e: Exception) {
+            Log.e("SongRepository", "Lỗi thêm playlist vào user: ${e.message}")
+            Result.failure(e)
+        }
+    }
 
     // Xóa playlist
     suspend fun deletePlaylist(playlistId: String, userId: String): Result<Unit> {
@@ -93,6 +121,19 @@ class FavoriteRepositories @Inject constructor() {
             Result.failure(e)
         }
     }
+    suspend fun deletePlaylistLiked(playlistId: String, userId: String): Result<Unit> {
+        return try {
+
+            db.collection("users").document(userId)
+                .update("playlistLiked", FieldValue.arrayRemove(playlistId)).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("SongRepository", "Lỗi xóa playlist: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+
 
     // Xóa bài hát khỏi playlist
     suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit> {
@@ -136,6 +177,20 @@ class FavoriteRepositories @Inject constructor() {
             emptyList()
         }
     }
+    suspend fun getUserLikedPlaylists(userId: String): List<PlaylistModel> {
+        val playlistIds = db.collection("users").document(userId).get().await()
+            .toObject(UserModel::class.java)?.playlistLiked ?: emptyList()
+
+        return if (playlistIds.isNotEmpty()) {
+            db.collection("playlists")
+                .whereIn("playlistId", playlistIds)
+                .get()
+                .await()
+                .toObjects(PlaylistModel::class.java)
+        } else {
+            emptyList()
+        }
+    }
 
     // Lấy bài hát trong playlist
     suspend fun getSongsInPlaylist(playlistId: String): List<SongModels> {
@@ -152,73 +207,6 @@ class FavoriteRepositories @Inject constructor() {
         }
     }
 
-    // Thích bài hát
-    suspend fun likeSong(userId: String, songId: String): Result<Unit> {
-        return try {
-            db.collection("songs").document(songId)
-                .update("likedBy", FieldValue.arrayUnion(userId)).await()
-            db.collection("users").document(userId)
-                .update("likedSongs", FieldValue.arrayUnion(songId)).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("FavoriteRepositories", "Lỗi thích bài hát: ${e.message}")
-            Result.failure(e)
-        }
-    }
-
-    // Bỏ thích bài hát
-    suspend fun unlikeSong(userId: String, songId: String): Result<Unit> {
-        return try {
-            db.collection("songs").document(songId)
-                .update("likedBy", FieldValue.arrayRemove(userId)).await()
-            db.collection("users").document(userId)
-                .update("likedSongs", FieldValue.arrayRemove(songId)).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("FavoriteRepositories", "Lỗi bỏ thích bài hát: ${e.message}")
-            Result.failure(e)
-        }
-    }
-
-    // Thích playlist
-    suspend fun likePlaylist(userId: String, playlistId: String): Result<Unit> {
-        return try {
-            db.collection("playlists").document(playlistId)
-                .update("likedBy", FieldValue.arrayUnion(userId)).await()
-            db.collection("users").document(userId)
-                .update("likedPlaylists", FieldValue.arrayUnion(playlistId)).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("FavoriteRepositories", "Lỗi thích playlist: ${e.message}")
-            Result.failure(e)
-        }
-    }
-
-    // Bỏ thích playlist
-    suspend fun unlikePlaylist(userId: String, playlistId: String): Result<Unit> {
-        return try {
-            db.collection("playlists").document(playlistId)
-                .update("likedBy", FieldValue.arrayRemove(userId)).await()
-            db.collection("users").document(userId)
-                .update("likedPlaylists", FieldValue.arrayRemove(playlistId)).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e("FavoriteRepositories", "Lỗi bỏ thích playlist: ${e.message}")
-            Result.failure(e)
-        }
-    }
-
-
-//    / Lấy thông tin playlist theo ID
-    suspend fun getPlaylistById(playlistId: String): PlaylistModel? {
-        return try {
-            db.collection("playlists").document(playlistId).get().await()
-                .toObject(PlaylistModel::class.java)
-        } catch (e: Exception) {
-            Log.e("PlaylistRepository", "Lỗi lấy playlist theo ID: ${e.message}", e)
-            null
-        }
-    }
     // Cập nhật playCount khi bài hát được phát
     suspend fun updatePlayCount(songId: String) {
         try {
@@ -236,6 +224,7 @@ class FavoriteRepositories @Inject constructor() {
             Log.e("FavoriteRepositories", "Lỗi lấy dữ liệu song: ${e.message}")
         }
     }
+
     // Cập nhật playCount khi bài hát được phát
     suspend fun updatePlayCountOfPlaylist(playlistId: String) {
         try {

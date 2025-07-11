@@ -47,7 +47,7 @@ class SongAdapter (
                 .load(song.thumbnailUrl)
                 .into(binding.imgThumbnails)
             binding.txtArtist.text = song.artist.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }}
-            binding.txtLuotxem.text = song.playCount.toString()
+            binding.txtLuotxem.text = "${song.playCount} Lượt nghe"
             binding.root.setOnClickListener {
                 onSongClick(song.songId)
             }

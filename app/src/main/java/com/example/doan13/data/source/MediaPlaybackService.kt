@@ -14,7 +14,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.example.doan13.R
 import com.example.doan13.data.models.songs.SongModels
-import com.example.doan13.ui.activities.MainActivity
+import com.example.doan13.MainActivity
 
 class MediaPlaybackService : MediaSessionService () {
     private var player: ExoPlayer? = null
