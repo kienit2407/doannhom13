@@ -11,5 +11,6 @@ data class PlaylistModel(
     val thumbnailUrl: String? = null,
     val playCount: Int = 0,
     @ServerTimestamp val createdAt: Date? = null,
+    val publicPlaylist: Boolean = false,
 ) {
 }

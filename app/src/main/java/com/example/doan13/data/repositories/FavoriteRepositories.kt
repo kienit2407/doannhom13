@@ -9,14 +9,28 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
+import okio.Source
 import javax.inject.Inject
 import kotlin.random.Random
-
-class FavoriteRepositories @Inject constructor() {
+interface FavoriteRepositories {
+    suspend fun createPlaylist(userId: String, name: String): Result<String>
+    suspend fun addSongToPlaylist(playlistId: String, songId: String): Pair<Result<Unit>, String?>
+    suspend fun addUserToPlaylist(playlistId: String, userId: String): Result<Unit>
+    suspend fun deletePlaylist(playlistId: String, userId: String): Result<Unit>
+    suspend fun updatePlayCount(songId: String)
+    suspend fun deletePlaylistLiked(playlistId: String, userId: String): Result<Unit>
+    suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit>
+    suspend fun getUserPlaylists(userId: String): List<PlaylistModel>
+    suspend fun getUserLikedPlaylists(userId: String): List<PlaylistModel>
+    suspend fun getSongsInPlaylist(playlistId: String): List<SongModels>
+    suspend fun updatePlayCountOfPlaylist(playlistId: String)
+    suspend fun updateNamePlayList(playlistId: String, newName: String): Result<Unit>
+}
+class FavoriteRepositoriesImpl : FavoriteRepositories{
     private val db = FirebaseFirestore.getInstance()
 
     // Tạo playlist mới
-    suspend fun createPlaylist(
+    override suspend fun createPlaylist(
         userId: String,
         name: String,
     ): Result<String> {
@@ -27,12 +41,12 @@ class FavoriteRepositories @Inject constructor() {
                 playlistId = playlistId,
                 name = name,
                 creatorId = userId,
-                songIds = emptyList(), // Playlist rỗng
-                thumbnailUrl = null, // Thumbnail rỗng khi tạo
+                songIds = emptyList(),
+                thumbnailUrl = null,
                 playCount = 0,
-                createdAt = null, // ServerTimestamp sẽ được Firestore gán
+                createdAt = null,
+                publicPlaylist = false,
             )
-
             // Lưu playlist vào Firestore
             db.collection("playlists").document(playlistId).set(playlistData).await()
 
@@ -49,7 +63,7 @@ class FavoriteRepositories @Inject constructor() {
 
 
     // Thêm bài hát vào playlist và cập nhật thumbnail
-    suspend fun addSongToPlaylist(playlistId: String, songId: String): Result<Unit> {
+   override suspend fun addSongToPlaylist(playlistId: String, songId: String): Pair<Result<Unit>, String?> {
         return try {
             // Lấy thông tin playlist hiện tại
             val playlistDoc = db.collection("playlists").document(playlistId).get().await()
@@ -57,31 +71,32 @@ class FavoriteRepositories @Inject constructor() {
                 ?: throw Exception("Playlist không tồn tại")
             // Lấy danh sách songIds hiện tại
             val currentSongIds = playlist.songIds.toMutableList() ?: mutableListOf()
-            if (!currentSongIds.contains(songId)) {
-                currentSongIds.add(songId)
-
-                // Cập nhật songIds
-                db.collection("playlists").document(playlistId)
-                    .update("songIds", currentSongIds).await()
-
-                // Nếu là bài hát đầu tiên, cập nhật thumbnailUrl
-                if (currentSongIds.size == 1) {
-                    val firstSong = db.collection("songs").document(songId).get().await()
-                        .toObject(SongModels::class.java)
-                    val newThumbnailUrl = firstSong?.thumbnailUrl ?: ""
-                    db.collection("playlists").document(playlistId)
-                        .update("thumbnailUrl", newThumbnailUrl).await()
-                }
+            // Kiểm tra nếu bài hát đã tồn tại
+            if (currentSongIds.contains(songId)) {
+                return Pair(Result.success(Unit), "Bài hát đã tồn tại trong playlist")
             }
 
+            currentSongIds.add(songId)
 
-            Result.success(Unit)
+            // Cập nhật songIds
+            db.collection("playlists").document(playlistId)
+                .update("songIds", currentSongIds).await()
+
+            // Nếu là bài hát đầu tiên, cập nhật thumbnailUrl
+            if (currentSongIds.size == 1) {
+                val firstSong = db.collection("songs").document(songId).get().await()
+                    .toObject(SongModels::class.java)
+                val newThumbnailUrl = firstSong?.thumbnailUrl ?: ""
+                db.collection("playlists").document(playlistId)
+                    .update("thumbnailUrl", newThumbnailUrl).await()
+            }
+
+            Pair(Result.success(Unit), "Thêm bài hát thành công")
         } catch (e: Exception) {
-            Log.e("SongRepository", "Lỗi thêm bài hát vào playlist: ${e.message}")
-            Result.failure(e)
+            Pair(Result.failure<Unit>(e), "Lỗi: ${e.message}")
         }
     }
-    suspend fun addUserToPlaylist(playlistId: String, userId: String): Result<Unit> {
+    override suspend fun addUserToPlaylist(playlistId: String, userId: String): Result<Unit> {
         return try {
             val userDocRef = db.collection("users").document(userId)
             val userPlaylistDoc = userDocRef.get().await()
@@ -110,7 +125,7 @@ class FavoriteRepositories @Inject constructor() {
     }
 
     // Xóa playlist
-    suspend fun deletePlaylist(playlistId: String, userId: String): Result<Unit> {
+    override suspend fun deletePlaylist(playlistId: String, userId: String): Result<Unit> {
         return try {
             db.collection("playlists").document(playlistId).delete().await()
             db.collection("users").document(userId)
@@ -121,7 +136,7 @@ class FavoriteRepositories @Inject constructor() {
             Result.failure(e)
         }
     }
-    suspend fun deletePlaylistLiked(playlistId: String, userId: String): Result<Unit> {
+    override suspend fun deletePlaylistLiked(playlistId: String, userId: String): Result<Unit> {
         return try {
 
             db.collection("users").document(userId)
@@ -136,7 +151,7 @@ class FavoriteRepositories @Inject constructor() {
 
 
     // Xóa bài hát khỏi playlist
-    suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit> {
+    override suspend fun removeSongFromPlaylist(playlistId: String, songId: String): Result<Unit> {
         return try {
             db.collection("playlists").document(playlistId)
                 .update("songIds", FieldValue.arrayRemove(songId)).await()
@@ -164,27 +179,27 @@ class FavoriteRepositories @Inject constructor() {
     }
 
     // Lấy danh sách playlist của user
-    suspend fun getUserPlaylists(userId: String): List<PlaylistModel> {
+    override suspend fun getUserPlaylists(userId: String): List<PlaylistModel> {
         val playlistIds = db.collection("users").document(userId).get().await()
             .toObject(UserModel::class.java)?.playlists ?: emptyList()
         return if (playlistIds.isNotEmpty()) {
             db.collection("playlists")
                 .whereIn("playlistId", playlistIds)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .await()
                 .toObjects(PlaylistModel::class.java)
         } else {
             emptyList()
         }
     }
-    suspend fun getUserLikedPlaylists(userId: String): List<PlaylistModel> {
+    override suspend fun getUserLikedPlaylists(userId: String): List<PlaylistModel> {
         val playlistIds = db.collection("users").document(userId).get().await()
             .toObject(UserModel::class.java)?.playlistLiked ?: emptyList()
 
         return if (playlistIds.isNotEmpty()) {
             db.collection("playlists")
                 .whereIn("playlistId", playlistIds)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .await()
                 .toObjects(PlaylistModel::class.java)
         } else {
@@ -193,13 +208,13 @@ class FavoriteRepositories @Inject constructor() {
     }
 
     // Lấy bài hát trong playlist
-    suspend fun getSongsInPlaylist(playlistId: String): List<SongModels> {
+    override suspend fun getSongsInPlaylist(playlistId: String): List<SongModels> {
         val playlist = db.collection("playlists").document(playlistId).get().await()
             .toObject(PlaylistModel::class.java)
         return if (playlist != null && playlist.songIds.isNotEmpty()) {
             db.collection("songs")
                 .whereIn("songId", playlist.songIds)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .await()
                 .toObjects(SongModels::class.java)
         } else {
@@ -208,7 +223,7 @@ class FavoriteRepositories @Inject constructor() {
     }
 
     // Cập nhật playCount khi bài hát được phát
-    suspend fun updatePlayCount(songId: String) {
+    override suspend fun updatePlayCount(songId: String) {
         try {
             val songDoc = db.collection("songs").document(songId).get().await()
             val currentPlayCount = songDoc.getLong("playCount")?.toInt() ?: 0
@@ -226,7 +241,7 @@ class FavoriteRepositories @Inject constructor() {
     }
 
     // Cập nhật playCount khi bài hát được phát
-    suspend fun updatePlayCountOfPlaylist(playlistId: String) {
+    override suspend fun updatePlayCountOfPlaylist(playlistId: String) {
         try {
             val playlistDoc = db.collection("playlists").document(playlistId).get().await()
             val currentPlayCount = playlistDoc.getLong("playCount")?.toInt() ?: 0
@@ -243,7 +258,7 @@ class FavoriteRepositories @Inject constructor() {
             Log.e("FavoriteRepositories", "Lỗi lấy dữ liệu song: ${e.message}")
         }
     }
-    suspend fun updateNamePlayList(playlisId: String, newName: String): Result<Unit> {
+    override suspend fun updateNamePlayList(playlisId: String, newName: String): Result<Unit> {
         return try {
             FirebaseFirestore.getInstance().collection("playlists")
                 .document(playlisId)

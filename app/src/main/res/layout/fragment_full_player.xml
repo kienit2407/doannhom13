@@ -9,121 +9,126 @@
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@drawable/background"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
         android:gravity="top"
-
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardView"
-                android:layout_width="match_parent"
-                android:layout_height="640dp"
-                android:layout_gravity="top"
-                app:cardCornerRadius="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/imgThumbnails"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    app:srcCompat="@drawable/user_demo" />
-
-
-            </androidx.cardview.widget.CardView>
-<LinearLayout
-    android:layout_width="match_parent"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:layout_height="wrap_content">
-    <FrameLayout
-        android:id="@+id/flbg"
-        android:layout_width="77dp"
-        android:layout_height="77dp"
-        android:background="@drawable/dia"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
         <androidx.cardview.widget.CardView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_gravity="center"
-            app:cardCornerRadius="60dp"
-            app:cardElevation="2dp">
+            android:id="@+id/cardView"
+            android:layout_width="match_parent"
+            android:layout_height="640dp"
+            android:layout_gravity="top"
+            app:cardCornerRadius="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/imgAvatar"
+                android:id="@+id/imgThumbnails"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/user" />
+                app:srcCompat="@drawable/user_demo" />
 
-            <ImageView
-                android:id="@+id/imgmark"
-                android:layout_gravity="center"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/mask" />
+
         </androidx.cardview.widget.CardView>
-    </FrameLayout>
-<LinearLayout
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="wrap_content">
-    <SeekBar
-        android:id="@+id/skPlayer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginRight="20dp"
-        android:max="100"
-        android:progress="0"
-        android:thumb="@drawable/seekbar_thumb" />
-    <LinearLayout
-        android:layout_marginRight="15dp"
-        android:layout_width="match_parent"
-        android:layout_marginTop="2dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/txtCurrent"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColor="@color/textColor2"
-            android:text="--:--" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/txtTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:textColor="@color/textColor2"
-            android:text="--:--" />
-    </LinearLayout>
+            <FrameLayout
+                android:id="@+id/flbg"
+                android:layout_width="77dp"
+                android:layout_height="77dp"
+                android:background="@drawable/dia"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-</LinearLayout>
+                <androidx.cardview.widget.CardView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="2dp">
 
-</LinearLayout>
+                    <ImageView
+                        android:id="@+id/imgAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/user" />
+
+                    <ImageView
+                        android:id="@+id/imgmark"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:layout_gravity="center"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/mask" />
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <SeekBar
+                    android:id="@+id/skPlayer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="20dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:thumb="@drawable/seekbar_thumb" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="15dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/txtCurrent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="--:--"
+                        android:textColor="@color/textColor2" />
+
+                    <TextView
+                        android:id="@+id/txtTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="--:--"
+                        android:textColor="@color/textColor2" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical"
             android:layout_marginBottom="50dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView

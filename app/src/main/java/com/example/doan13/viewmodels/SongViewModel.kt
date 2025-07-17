@@ -69,8 +69,37 @@ class SongViewModel @Inject constructor(
     private var _isUploadedThumnailPlaylist = MutableLiveData<Boolean?>()
     val isUploadedThumnailPlaylist: LiveData<Boolean?> = _isUploadedThumnailPlaylist
 
+    private val _isPublic = MutableLiveData<Boolean>(false)
+    val isPublic: LiveData<Boolean> = _isPublic
+
+    private val _isPublicPlaylist = MutableLiveData<Boolean>(false)
+    val isPublicPlist: LiveData<Boolean> = _isPublicPlaylist
 
 
+    fun updatePublicStatusForPlaylist(playlistId: String, isPublic: Boolean) {
+        viewModelScope.launch {
+            try {
+                songRepository.updatePublicStatusForPlaylist(playlistId, isPublic)
+                _isPublicPlaylist.value = isPublic
+            } catch (e: Exception) {
+                Log.e("FavoriteViewModel", "Lỗi: ${e.message}")
+
+            }
+        }
+    }
+    fun updatePublicStatus(songId: String, isPublic: Boolean) {
+        viewModelScope.launch {
+            try {
+                songRepository.updatePublicStatusForTrack(songId, isPublic)
+                _isPublic.value = isPublic
+//                _message.value = "Cập nhật trạng thái công khai thành công"
+            } catch (e: Exception) {
+                Log.e("FavoriteViewModel", "Lỗi: ${e.message}")
+//                _message.value = "Lỗi: ${e.message}"
+            }
+//            _message.value = null
+        }
+    }
     // Lấy thông tin người dùng và danh sách bài hát đã đăng
     fun getUserAndUploadedSongs(userId: String) {
         _loading.value = true

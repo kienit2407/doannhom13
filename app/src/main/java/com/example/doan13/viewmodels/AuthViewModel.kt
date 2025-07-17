@@ -33,8 +33,6 @@ class AuthViewModel @Inject constructor(
 )  : ViewModel() { //kế thừa view model: tránh mất dư xiêu khi xoay màn hình, tách biệt hoàn toàn với logic UI, giúp
 
     private lateinit var googleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 9001
-    private val firebaseFireStore = FirebaseFirestore.getInstance()
 
     val registrationSuccess = MutableLiveData<Boolean>()
     val loginSuccess = MutableLiveData<Boolean>()

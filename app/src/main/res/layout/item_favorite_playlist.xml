@@ -3,27 +3,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="10dp"
+    android:layout_marginVertical="8dp"
     android:background="@drawable/playlistadd"
     android:orientation="horizontal"
-    android:padding="10dp"
+    android:padding="8dp"
     android:gravity="center_vertical">
 
-    <!-- CardView chứa ảnh -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="150dp"
-        android:layout_height="100dp"
-        app:cardCornerRadius="20dp"
-        android:layout_marginEnd="12dp"
-        android:background="@drawable/playlist_custom">
+   <androidx.constraintlayout.widget.ConstraintLayout
+       android:layout_width="wrap_content"
+       android:layout_marginRight="10dp"
+       android:background="@drawable/custom_playlist"
+       android:layout_height="wrap_content">
+       <!-- CardView chứa ảnh -->
+       <androidx.cardview.widget.CardView
+           android:layout_width="150dp"
+           android:layout_height="85dp"
+           android:background="@drawable/custom_playlist"
+           app:cardCornerRadius="10dp"
+           app:layout_constraintBottom_toBottomOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/imgPlaylist"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/user" />
-    </androidx.cardview.widget.CardView>
+           <ImageView
+               android:id="@+id/imgPlaylist"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:scaleType="centerCrop"
+               android:src="@drawable/user" />
+       </androidx.cardview.widget.CardView>
+   </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Phần thông tin text -->
     <LinearLayout
@@ -82,5 +91,5 @@
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:padding="8dp"
-        app:srcCompat="@drawable/delete_playlist" />
+        app:srcCompat="@drawable/menu" />
 </LinearLayout>
