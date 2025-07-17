@@ -33,7 +33,7 @@ class SearchTracksFragment : Fragment() {
     private val mediaViewModel: MediaViewModel by activityViewModels()
     private val favoriteViewModel: FavoriteViewModel by activityViewModels()
     private lateinit var publicTracksAdapter: PublicTracksAdapter
-
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -80,6 +80,20 @@ class SearchTracksFragment : Fragment() {
                 binding.tvNoResults.visibility = View.GONE
                 binding.recyclerView.visibility = View.VISIBLE
                 publicTracksAdapter.setSongs(tracks)
+            }
+        }
+        favoriteViewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
+
+            result?.let {
+                when {
+                    it.isSuccess -> {
+                        ToastCustom.showCustomToast(requireContext(), "Playlist created!")
+                        favoriteViewModel.loadPlaylists(userId) // Cập nhật lại danh sách
+                    }
+                    it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                }
+                favoriteViewModel.resetCreatePlaylistResult()
+
             }
         }
     }

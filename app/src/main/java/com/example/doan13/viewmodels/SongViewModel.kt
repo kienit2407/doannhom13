@@ -73,14 +73,33 @@ class SongViewModel @Inject constructor(
     val isPublic: LiveData<Boolean> = _isPublic
 
     private val _isPublicPlaylist = MutableLiveData<Boolean>(false)
-    val isPublicPlist: LiveData<Boolean> = _isPublicPlaylist
+    val isPublicPlaylist: LiveData<Boolean> = _isPublicPlaylist
 
+    fun loadPublicStatusForTrack(songId: String) {
+        viewModelScope.launch {
+            try {
+                val isPublic = songRepository.getPublicStatusForTrack(songId) // Giả sử có phương thức này
+                _isPublic.value = isPublic
+            } catch (e: Exception) {
+                Log.e("FavoriteViewModel", "Lỗi tải trạng thái public: ${e.message}")
+            }
+        }
+    }
 
+    fun loadPublicStatusForPlaylist(playlistId: String) {
+        viewModelScope.launch {
+            try {
+                val isPublic = songRepository.getPublicStatusForPlaylist(playlistId) // Giả sử có phương thức này
+                _isPublicPlaylist.value = isPublic
+            } catch (e: Exception) {
+                Log.e("FavoriteViewModel", "Lỗi tải trạng thái public: ${e.message}")
+            }
+        }
+    }
     fun updatePublicStatusForPlaylist(playlistId: String, isPublic: Boolean) {
         viewModelScope.launch {
             try {
                 songRepository.updatePublicStatusForPlaylist(playlistId, isPublic)
-                _isPublicPlaylist.value = isPublic
             } catch (e: Exception) {
                 Log.e("FavoriteViewModel", "Lỗi: ${e.message}")
 
