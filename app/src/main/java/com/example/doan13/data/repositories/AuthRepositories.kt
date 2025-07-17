@@ -11,16 +11,25 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
-
-class AuthRepositories {
+interface AuthRepositories {
+    suspend fun updateRecentlyPlayed(userId: String, songId: String): Result<Unit>
+    suspend fun updateUserName(userId: String, newName: String): Result<Unit>
+    suspend fun register(user: CreateUserModel): Result<Unit>
+    suspend fun login(email: String, password: String): Result<Unit>
+    suspend fun signInWithGoogle(idToken: String): Result<Unit>
+    suspend fun loadUser(userId: String): UserModel?
+    suspend fun resetPassword(email: String): Result<Unit>
+    suspend fun signOut()
+    fun getCurrentUserId(): String?
+}
+class AuthRepositoriesImpl : AuthRepositories {
     private val firebaseAuth = FirebaseAuth.getInstance() //tạo instance cho firebase
     private val firebaseFireStore = FirebaseFirestore.getInstance()
 
-    suspend fun updateRecentlyPlayed(userId: String, songId: String): Result<Unit> {
+    override suspend fun updateRecentlyPlayed(userId: String, songId: String): Result<Unit> {
         return try {
-            val userDoc = firebaseFireStore.collection("users").document(userId).get().await()
-
             firebaseFireStore.collection("users").document(userId)
                 .update("recentlyPlayed", FieldValue.arrayUnion(songId))
                 .await()
@@ -33,7 +42,7 @@ class AuthRepositories {
     }
 
 
-    suspend fun updateUserName(userId: String, newName: String): Result<Unit> {
+    override suspend fun updateUserName(userId: String, newName: String): Result<Unit> {
         return try {
             FirebaseFirestore.getInstance().collection("users")
                 .document(userId)
@@ -46,7 +55,7 @@ class AuthRepositories {
         }
     }
 
-    suspend fun register(user: CreateUserModel): Result<Unit> {
+    override suspend fun register(user: CreateUserModel): Result<Unit> {
         return try {
             val state = firebaseAuth.createUserWithEmailAndPassword(user.email, user.password).await()
             val userId = state.user?.uid ?: throw Exception("Không lấy được userId")
@@ -70,7 +79,7 @@ class AuthRepositories {
         }
     }
 
-    suspend fun login(email: String, password: String): Result<Unit> {
+    override suspend fun login(email: String, password: String): Result<Unit> {
         return try {
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
             Result.success(Unit)
@@ -80,7 +89,7 @@ class AuthRepositories {
         }
     }
 
-    suspend fun signInWithGoogle(idToken: String): Result<Unit> {
+    override suspend fun signInWithGoogle(idToken: String): Result<Unit> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null) //tạo credential
             val task = firebaseAuth.signInWithCredential(credential).await()
@@ -121,11 +130,11 @@ class AuthRepositories {
         }
     }
 
-    suspend fun loadUser(userId: String): UserModel?{
+    override suspend fun loadUser(userId: String): UserModel?{
         return try {
             firebaseFireStore.collection("users")
                 .document(userId)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObject(UserModel::class.java)
         } catch (e: Exception) {
@@ -134,7 +143,7 @@ class AuthRepositories {
         }
     }
 
-    suspend fun resetPassword(email: String): Result<Unit> {
+    override suspend fun resetPassword(email: String): Result<Unit> {
         return try {
             firebaseAuth.sendPasswordResetEmail(email).await()
             Result.success(Unit)
@@ -144,11 +153,11 @@ class AuthRepositories {
         }
     }
 
-    suspend fun signOut() {
+    override suspend fun signOut() {
         firebaseAuth.signOut()
     }
 
-    fun getCurrentUserId(): String? {
+    override fun getCurrentUserId(): String? {
         return firebaseAuth.currentUser?.uid
     }
 

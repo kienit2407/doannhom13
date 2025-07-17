@@ -17,14 +17,45 @@ import com.example.doan13.data.models.songs.SongModels
 import com.google.firebase.auth.FirebaseAuth
 
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
 import kotlin.random.Random
+interface SongRepositories{
+    suspend fun uploadSong(
+        thumbnail: File,
+        mp3File: File,
+        title: String,
+        artist: String,
+        uploaderId: String,
+        onProgress: (Int) -> Unit
+    ): Result<String>
 
-class SongRepositories {
+    suspend fun updateAvatar(
+        avatarFile: File,
+        userId: String,
+        onProgress: (Int) -> Unit
+    ): Result<String>
+
+    suspend fun getRecentSongs(userId: String): List<SongModels>
+    suspend fun getArtists(currentUserId: String): List<UserModel>
+    suspend fun getNewTracks(currentUserId: String): List<SongModels>
+    suspend fun getPopularPlaylists(currentUserId: String): List<PlaylistModel>
+    suspend fun getRecommendedTracks(currentUserId: String): List<SongModels>
+    suspend fun getRecommendedPlaylists(currentUserId: String): List<PlaylistModel>
+    suspend fun getSongById(songId: String): SongModels?
+    suspend fun getSongsByUserUploaded(userId: String): List<SongModels>
+    suspend fun removeSong(userId: String, songId: String): Result<Unit>
+    suspend fun getAllUsers(): List<UserModel>
+    suspend fun getAllPlaylists(): List<PlaylistModel>
+    suspend fun getAllSongs(): List<SongModels>
+    suspend fun updatePublicStatusForTrack(songId: String, isPublic: Boolean): Result<Unit>
+    suspend fun updatePublicStatusForPlaylist(playlistId: String, isPublic: Boolean): Result<Unit>
+}
+class SongRepositoriesImpl : SongRepositories {
     private val db = FirebaseFirestore.getInstance()
    private val userId = FirebaseAuth.getInstance().currentUser?.uid
-    suspend fun uploadSong(
+    override suspend fun uploadSong(
         thumbnail: File,
         mp3File: File,
         title: String,
@@ -61,8 +92,9 @@ class SongRepositories {
                 thumbnailUrl = thumbnailUrl,
                 mp3Url = mp3Url,
                 userId = uploaderId,
-                createdAt = null, // ServerTimestamp sẽ được Firestore gán
+                createdAt = null,
                 playCount = 0,
+                publicTrack = false
             )
 
             // Lưu bài hát vào Firestore
@@ -122,7 +154,7 @@ class SongRepositories {
             }
         }
     }
-    suspend fun updateAvatar(
+    override suspend fun updateAvatar(
         avatarFile: File,
         userId: String,
         onProgress: (Int) -> Unit
@@ -154,7 +186,7 @@ class SongRepositories {
     }
 
 // hàm lấy ra những bài hát gần đây đã
-    suspend fun getRecentSongs(userId: String,): List<SongModels> {
+    override suspend fun getRecentSongs(userId: String,): List<SongModels> {
         return try {
             val userDoc = db.collection("users").document(userId).get().await() //lấy ra doc của user
             val user = userDoc.toObject(UserModel::class.java) // truy cập vào field recent để lấy ra
@@ -164,14 +196,11 @@ class SongRepositories {
             if (songRecent.isNotEmpty()) {
                 val songsQuery = db.collection("songs")
                     .whereIn("songId", songRecent)
-                    .get()
+                    .get(Source.SERVER)
                     .await()
 
                 val songs = songsQuery.toObjects(SongModels::class.java)
                 songs.sortedByDescending { songRecent.indexOf(it.songId)}
-
-                Log.d("SongRepository", "Songs retrieved: ${songs.size}")
-
                 songs
             } else {
                 Log.d("SongRepository", "No uploaded songs found")
@@ -184,11 +213,11 @@ class SongRepositories {
         }
     }
 
-    suspend fun getArtists(currentUserId: String): List<UserModel> { //lấy ra tất cả user
+    override suspend fun getArtists(currentUserId: String): List<UserModel> { //lấy ra tất cả user
         return try {
             db.collection("users")
                 .whereNotEqualTo("uid", currentUserId)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObjects(UserModel::class.java)
                 .shuffled()
@@ -198,13 +227,14 @@ class SongRepositories {
         }
     }
 //lấy ra những bài hát mới nhất
-    suspend fun getNewTracks(currentUserId: String): List<SongModels> {
+    override suspend fun getNewTracks(currentUserId: String): List<SongModels> {
         return try {
             db.collection("songs")
-                .whereNotEqualTo("userId", currentUserId) // Lọc bài hát của người dùng khác
+                .whereEqualTo("publicTrack", true) // Lọc bài hát của người dùng khác
+                .whereNotEqualTo("userId", currentUserId)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .limit(10)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObjects(SongModels::class.java)
         } catch (e: Exception) {
@@ -213,31 +243,32 @@ class SongRepositories {
         }
     }
 
-    @SuppressLint("SuspiciousIndentation")
-    suspend fun getPopularPlaylists(currentUserId: String): List<PlaylistModel> {
+
+    override suspend fun getPopularPlaylists(currentUserId: String): List<PlaylistModel> {
         return try {
          val playlists = db.collection("playlists")
-                .whereNotEqualTo("creatorId", currentUserId) // Lọc playlist của người dùng khác
+                .whereEqualTo("publicPlaylist", true)
+                .whereNotEqualTo("creatorId", currentUserId)
                 .orderBy("playCount", Query.Direction.DESCENDING)
                 .limit(10)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObjects(PlaylistModel::class.java)
-
             playlists.filter { it.songIds.size >=2 }
-                .distinctBy { it.playlistId }
+                .distinctBy { it.playlistId} //không lấy những bài hát trùng
         } catch (e: Exception) {
             Log.e("SongRepositories", "Error getting popular playlists: ${e.message}")
             emptyList()
         }
     }
 
-    suspend fun getRecommendedTracks(currentUserId: String): List<SongModels> {
+    override suspend fun getRecommendedTracks(currentUserId: String): List<SongModels> {
         return try {
             db.collection("songs")
+                .whereEqualTo("publicTrack", true)
                 .whereNotEqualTo("userId", currentUserId) // Lọc bài hát của người dùng khác
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObjects(SongModels::class.java)
                 .shuffled() // Xáo trộn
@@ -247,13 +278,14 @@ class SongRepositories {
         }
     }
 
-    @SuppressLint("SuspiciousIndentation")
-    suspend fun getRecommendedPlaylists(currentUserId: String): List<PlaylistModel> {
+
+    override suspend fun getRecommendedPlaylists(currentUserId: String): List<PlaylistModel> {
         return try {
       val playlists =  db.collection("playlists")
+                .whereEqualTo("publicPlaylist", true)
                 .whereNotEqualTo("creatorId", currentUserId) // Lọc playlist của người dùng khác
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObjects(PlaylistModel::class.java)
                 .shuffled() // Xáo trộn để thay thế "random"
@@ -264,15 +296,12 @@ class SongRepositories {
             emptyList()
         }
     }
-
-
-
     //hàm xử lý phàn tìm kiếm
-    suspend fun getAllSongs(): List<SongModels> {
+    override suspend fun getAllSongs(): List<SongModels> {
         return try {
             db.collection("songs")
-                .whereNotEqualTo("userId", userId) // Lọc bài hát của người dùng khác
-                .get()
+                .whereEqualTo("publicTrack", true)
+                .get(Source.SERVER)
                 .await()
                 .documents
                 .mapNotNull { it.toObject(SongModels::class.java) }
@@ -282,11 +311,12 @@ class SongRepositories {
         }
     }
 
-    suspend fun getAllPlaylists(): List<PlaylistModel> {
+    override suspend fun getAllPlaylists(): List<PlaylistModel> {
         return try {
          val playlists =  db.collection("playlists")
+                .whereEqualTo("publicPlaylist", true)
                 .whereNotEqualTo("creatorId", userId) // Lọc bài hát của người dùng khác
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .documents
                 .mapNotNull { it.toObject(PlaylistModel::class.java) }
@@ -298,11 +328,11 @@ class SongRepositories {
         }
     }
 
-    suspend fun getAllUsers(): List<UserModel> {
+    override suspend fun getAllUsers(): List<UserModel> {
         return try {
             db.collection("users")
                 .whereNotEqualTo("uid", userId) // Lọc bài hát của người dùng khác
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .documents
                 .mapNotNull { it.toObject(UserModel::class.java) }
@@ -313,11 +343,11 @@ class SongRepositories {
     }
 
 
-    suspend fun getSongById(songId: String): SongModels? {
+    override suspend fun getSongById(songId: String): SongModels? {
         return try {
             FirebaseFirestore.getInstance().collection("songs")
                 .document(songId)
-                .get()
+                .get(Source.SERVER)
                 .await()
                 .toObject(SongModels::class.java)
         } catch (e: Exception) {
@@ -327,7 +357,7 @@ class SongRepositories {
     }
 
 
-    suspend fun getSongsByUserUploaded(userId: String): List<SongModels> {
+    override suspend fun getSongsByUserUploaded(userId: String): List<SongModels> {
         return try {
             val userDoc = db.collection("users").document(userId).get().await()
             val user = userDoc.toObject(UserModel::class.java)
@@ -336,7 +366,7 @@ class SongRepositories {
                  db.collection("songs")
                     .whereIn("songId", songUploadedIds)
                     .orderBy("createdAt", Query.Direction.DESCENDING)
-                    .get()
+                    .get(Source.SERVER)
                     .await()
                     .toObjects(SongModels::class.java)
             } else {
@@ -350,7 +380,7 @@ class SongRepositories {
     }
 
     // Xóa bài hát khỏi playlist
-    suspend fun removeSong(userId: String, songId: String): Result<Unit> {
+    override suspend fun removeSong(userId: String, songId: String): Result<Unit> {
         return try {
             db.collection("users").document(userId)
                 .update("uploadedSongs", FieldValue.arrayRemove(songId)).await()
@@ -360,9 +390,32 @@ class SongRepositories {
             Result.failure(e)
         }
     }
+    override suspend fun updatePublicStatusForTrack(songId: String, isPublic: Boolean): Result<Unit> {
+        return try {
+            db.collection("songs").document(songId)
+                .update("publicTrack", isPublic)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("FavoriteRepository", "Lỗi cập nhật public: ${e.message}")
+            Result.failure(e)
+        }
+    }
 
-
-
+    override suspend fun updatePublicStatusForPlaylist(
+        playlistId: String,
+        isPublic: Boolean
+    ): Result<Unit> {
+        return try {
+            db.collection("playlists").document(playlistId)
+                .update("publicPlaylist", isPublic)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("FavoriteRepository", "Lỗi cập nhật public: ${e.message}")
+            Result.failure(e)
+        }
+    }
 
 
 }

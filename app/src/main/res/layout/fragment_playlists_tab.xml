@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="8dp"
             android:gravity="center"
-            android:text="Your PLaylist That You Like"
+            android:text="Your PLaylist Which You Like"
             android:textColor="@color/textColor2"
             android:textSize="18dp"
             android:textStyle="bold" />

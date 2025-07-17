@@ -7,7 +7,7 @@
                 android:centerColor="#31E7CB"
                 android:angle="45"
                 android:endColor="#00D9F5"/>
-            <corners android:radius="20dp"/>
+            <corners android:radius="16dp"/>
         </shape>
     </item>
 </layer-list>

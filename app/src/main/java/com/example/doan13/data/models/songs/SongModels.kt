@@ -12,5 +12,6 @@ data class SongModels (
     val userId: String = "",
     @ServerTimestamp val createdAt: Date? = null,
     val playCount: Int = 0,
+    val publicTrack: Boolean = false,
 ){
 }

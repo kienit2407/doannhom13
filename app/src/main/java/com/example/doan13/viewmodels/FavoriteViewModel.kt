@@ -1,5 +1,6 @@
 package com.example.doan13.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -48,6 +49,9 @@ class FavoriteViewModel @Inject constructor(
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
+    private val _message = MutableLiveData<String?>(null) // Sử dụng để thông báo
+    val message: LiveData<String?> = _message
+
 
     fun modifyName(userId: String, newName: String) {
         viewModelScope.launch {
@@ -74,6 +78,7 @@ class FavoriteViewModel @Inject constructor(
         viewModelScope.launch {
             _createPlaylistResult.value = favoriteRepository.createPlaylist(userId, name)
         }
+
     }
 
     fun deletePlaylist(playlistId: String, userId: String) {
@@ -90,8 +95,15 @@ class FavoriteViewModel @Inject constructor(
     fun addSongToPlaylist(playlistId: String, songId: String) {
         _loading.value = true
         viewModelScope.launch {
-            _addSongToPlaylistResult.value = favoriteRepository.addSongToPlaylist(playlistId, songId)
+            val (result, message) = favoriteRepository.addSongToPlaylist(playlistId, songId)
+            if (result.isSuccess) {
+                _message.value = message
+            } else {
+                Log.e("FavoriteViewModel", "Lỗi: ${result.exceptionOrNull()?.message}")
+                _message.value = message ?: "Lỗi không xác định"
+            }
             _loading.value = false
+            _message.value = null
         }
     }
     fun addPlaylistToPlaylist(playlistId: String, userId : String) {
@@ -99,6 +111,7 @@ class FavoriteViewModel @Inject constructor(
         viewModelScope.launch {
             _addPLaylistToPlaylistResult.value = favoriteRepository.addUserToPlaylist(playlistId, userId)
             _loading.value = false
+
         }
     }
 
@@ -138,10 +151,9 @@ class FavoriteViewModel @Inject constructor(
     }
 
     fun resetLoadPlaylist() {
-        _playlists.value = null
+
     }
     fun resetLoadLikedPlaylist() {
         _playlistLiked.value = null
     }
-
 }
