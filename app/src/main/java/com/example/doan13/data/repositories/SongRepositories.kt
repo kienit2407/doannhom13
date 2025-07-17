@@ -51,6 +51,8 @@ interface SongRepositories{
     suspend fun getAllSongs(): List<SongModels>
     suspend fun updatePublicStatusForTrack(songId: String, isPublic: Boolean): Result<Unit>
     suspend fun updatePublicStatusForPlaylist(playlistId: String, isPublic: Boolean): Result<Unit>
+    suspend fun getPublicStatusForPlaylist(playlistId: String): Boolean
+    suspend fun getPublicStatusForTrack(songId: String): Boolean
 }
 class SongRepositoriesImpl : SongRepositories {
     private val db = FirebaseFirestore.getInstance()
@@ -254,7 +256,7 @@ class SongRepositoriesImpl : SongRepositories {
                 .get(Source.SERVER)
                 .await()
                 .toObjects(PlaylistModel::class.java)
-            playlists.filter { it.songIds.size >=2 }
+            playlists.filter { it.songIds.size >=2}
                 .distinctBy { it.playlistId} //không lấy những bài hát trùng
         } catch (e: Exception) {
             Log.e("SongRepositories", "Error getting popular playlists: ${e.message}")
@@ -414,6 +416,31 @@ class SongRepositoriesImpl : SongRepositories {
         } catch (e: Exception) {
             Log.e("FavoriteRepository", "Lỗi cập nhật public: ${e.message}")
             Result.failure(e)
+        }
+    }
+   override suspend fun getPublicStatusForTrack(songId: String): Boolean {
+        return try {
+            val document = db.collection("songs")
+                .document(songId)
+                .get(Source.SERVER)
+                .await()
+            document.getBoolean("publicTrack") ?: false
+        } catch (e: Exception) {
+            Log.e("SongRepositories", "Lỗi lấy trạng thái public: ${e.message}")
+            false
+        }
+    }
+
+   override suspend fun getPublicStatusForPlaylist(playlistId: String): Boolean {
+        return try {
+            val document = db.collection("playlists")
+                .document(playlistId)
+                .get(Source.SERVER)
+                .await()
+            document.getBoolean("publicPlaylist") ?: false
+        } catch (e: Exception) {
+            Log.e("SongRepositories", "Lỗi lấy trạng thái public: ${e.message}")
+            false
         }
     }
 

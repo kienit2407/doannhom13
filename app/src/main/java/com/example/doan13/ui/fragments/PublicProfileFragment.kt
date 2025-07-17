@@ -152,6 +152,20 @@ class PublicProfileFragment : Fragment() {
                 binding.txtTrack.text = "Track Of ${data.name.split(" ").joinToString(" ") {it.replaceFirstChar {it.uppercase() }} ?: "Không xác định"}"
             }
         }
+        favoriteViewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
+
+            result?.let {
+                when {
+                    it.isSuccess -> {
+                        ToastCustom.showCustomToast(requireContext(), "Playlist created!")
+                        favoriteViewModel.loadPlaylists(userId) // Cập nhật lại danh sách
+                    }
+                    it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                }
+                favoriteViewModel.resetCreatePlaylistResult()
+
+            }
+        }
 
     }
 

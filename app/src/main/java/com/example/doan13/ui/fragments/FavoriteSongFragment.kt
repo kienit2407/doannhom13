@@ -27,6 +27,7 @@ import com.example.doan13.viewmodels.SongViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class FavoriteSongFragment : Fragment() {
@@ -122,6 +123,9 @@ class FavoriteSongFragment : Fragment() {
                 findNavController().navigate(action)
             },
             onDeleteClick = { playlistId ->
+                lifecycleScope.launch {
+                    songViewModel.loadPublicStatusForPlaylist(playlistId = playlistId)
+                }
                 showBottomSheetOption(playlistId = playlistId)
             }
         )
@@ -182,8 +186,10 @@ class FavoriteSongFragment : Fragment() {
 
         val bottomBinding = BottomSheetCustomForPlaylistBinding.inflate(layoutInflater)
         val bottomSheet = BottomSheetDialog(requireContext())
+
+        songViewModel.loadPublicStatusForPlaylist(playlistId)
         //quan sát dữ liệu để cập nhật trạng thái cho switch
-        songViewModel.isPublic.observe(viewLifecycleOwner){state->
+        songViewModel.isPublicPlaylist.observe(viewLifecycleOwner){state->
             bottomBinding.switchIsPublic.isChecked = state ?: false
         }
 
@@ -204,6 +210,7 @@ class FavoriteSongFragment : Fragment() {
                 ToastCustom.showCustomToast(requireContext(),"Đã tắt công khai")
             }
         }
+
 
 
 

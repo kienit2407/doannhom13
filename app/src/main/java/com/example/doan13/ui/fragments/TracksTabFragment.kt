@@ -31,6 +31,7 @@ import com.example.doan13.viewmodels.UploadViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class TracksTabFragment() : Fragment() {
@@ -72,12 +73,12 @@ class TracksTabFragment() : Fragment() {
                 mediaViewModel.setSongAndPlay(songId)
                 showMiniPlayer()
             },
-            onDeleteSongClick = { songId->
+            onOptionSongClick = { songId->
+               viewLifecycleOwner.lifecycleScope.launch {
+                    songViewModel.loadPublicStatusForTrack(songId)
+                }
                 showBottomSheetOption(songId)
 
-            },
-            onSAddPlaylist = { songId ->
-                showBottomSheetOption(songId)
             },
             songViewModel = songViewModel
         )
@@ -106,6 +107,20 @@ class TracksTabFragment() : Fragment() {
                     songViewModel.getUserAndUploadedSongs(userId)
                     Toast.makeText(requireContext(), "Đã xoá bài hát", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+        favoriteViewModel.createPlaylistResult.observe(viewLifecycleOwner) { result ->
+
+            result?.let {
+                when {
+                    it.isSuccess -> {
+                        ToastCustom.showCustomToast(requireContext(), "Playlist created!")
+                        favoriteViewModel.loadPlaylists(userId) // Cập nhật lại danh sách
+                    }
+                    it.isFailure -> Toast.makeText(context, "Error: ${it.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                }
+                favoriteViewModel.resetCreatePlaylistResult()
+
             }
         }
 
@@ -188,7 +203,6 @@ class TracksTabFragment() : Fragment() {
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
             .create()
-        lifecycleScope.launch {
             dialogBinding.btnCreate.setOnClickListener {
                 val name = dialogBinding.edtNamePlaylist.text.toString()
                 if (name.isBlank()) {
@@ -216,15 +230,15 @@ class TracksTabFragment() : Fragment() {
             }
 
             dialog.show()
-        }
     }
     private fun showBottomSheetOption (songId: String){
 
         val bottomBinding = BottomSheetCustomBinding.inflate(layoutInflater)
        val bottomSheet = BottomSheetDialog(requireContext())
+
         //quan sát dữ liệu để cập nhật trạng thái cho switch
-        songViewModel.isPublic.observe(viewLifecycleOwner){state->
-            bottomBinding.switchIsPublic.isChecked = state ?: false
+        songViewModel.isPublic.observe(viewLifecycleOwner){ state->
+            bottomBinding.switchIsPublic.isChecked = state
         }
 
         bottomSheet.setContentView(bottomBinding.root)
@@ -247,6 +261,13 @@ class TracksTabFragment() : Fragment() {
                 ToastCustom.showCustomToast(requireContext(),"Đã bật công khai")
             }else{
                 ToastCustom.showCustomToast(requireContext(),"Đã tắt công khai")
+            }
+        }
+        songViewModel.removeSongs.observe(viewLifecycleOwner){result ->
+            result?.let {
+                if(it.isSuccess){
+                    bottomSheet.dismiss()
+                }
             }
         }
         bottomSheet.show()
