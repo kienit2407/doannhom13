@@ -24,6 +24,7 @@ import com.example.doan13.viewmodels.UploadViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -53,11 +54,9 @@ class UploadFragment : Fragment() {
                         Log.d("UploadFragment", "Thumbnail selected: ${file.absolutePath}")
                     } else {
                         binding.textViewThumbnailStatus.text = "File thumbnail không hợp lệ"
-                        Log.e("UploadFragment", "Invalid thumbnail file")
                     }
                 } catch (e: Exception) {
                     binding.textViewThumbnailStatus.text = "Lỗi khi chọn thumbnail: ${e.message}"
-                    Log.e("UploadFragment", "Error selecting thumbnail: ${e.message}")
                 }
             }
         }
@@ -148,23 +147,28 @@ class UploadFragment : Fragment() {
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
             .create()
+
+        dialog.setCancelable(false)
         // Quan sát tiến trình tải lên
         uploadViewModel.uploadProgress.observe(viewLifecycleOwner) { progress ->
-            dialogBinding.progressBar.progress = progress
-            dialogBinding.txtProcessState.text = "Đang tải $progress%"
-            Log.d("UploadFragment", "Upload progress: $progress%")
+          progress?.let {
+              dialogBinding.progressBar.progress = progress
+              dialogBinding.txtProcessState.text = "Đang tải $progress%"
+              Log.d("UploadFragment", "Upload progress: $progress%")
+          }
         }
         // Quan sát trạng thái tải lên
         uploadViewModel.uploadState.observe(viewLifecycleOwner) { result ->
             result?.let {
                 it.onSuccess { songId ->
-//                binding.textViewStatus.text = "Tải lên thành công: $songId"
-                    Log.d("UploadFragment", "Upload success: $songId")
                     ToastCustom.showCustomToast(requireContext(), "Tải lên thành công!")
                     dialog.dismiss()
-                    findNavController().popBackStack()
+                    uploadViewModel.removeUploadState()
+                    lifecycleScope.launch {
+                        delay(1000)
+                        findNavController().popBackStack()
+                    }
                 }.onFailure { error ->
-//                ToastCustom.showCustomToast(requireContext(), "Đã huỷ tải lên")
                     Log.e("UploadFragment", "Upload error: ${error.message}")
                 }
             }

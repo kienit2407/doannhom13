@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_controller"
+    app:startDestination="@id/nav_home">
+
+    <!-- Home Fragment -->
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.doan13.ui.fragments.HomeFragment"
+        android:label="Home">
+        <action
+            android:id="@+id/action_HomeFragment_to_publicPlaylistDetailFragment"
+            app:destination="@id/publicPlaylistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_nav_home_to_nav_profile"
+            app:destination="@id/nav_profile"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_homeFragment_to_uploadFragment"
+            app:destination="@id/uploadFragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_homeFragment_to_playerFragment"
+            app:destination="@id/playerFragment">
+            <argument
+                android:name="itemId"
+                app:argType="string" />
+            <argument
+                android:name="isTrack"
+                app:argType="boolean"
+                android:defaultValue="true" />
+        </action>
+        <action
+            android:id="@+id/action_HomeFragment_to_publicProfileFragment"
+            app:destination="@id/publicProfileFragment">
+            <argument
+                android:name="userId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <!-- Favorites Fragment -->
+    <fragment
+        android:id="@+id/nav_favorites"
+        android:name="com.example.doan13.ui.fragments.FavoriteSongFragment"
+        android:label="Favorites">
+        <action
+            android:id="@+id/action_favoriteSongFragment_to_playlistDetailFragment"
+
+            app:destination="@id/playlistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string" />
+        </action>
+
+    </fragment>
+
+    <!-- Search Fragment -->
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="com.example.doan13.ui.fragments.SearchFragment"
+        android:label="Search">
+        <action
+            android:id="@+id/action_SearchFragment_to_publicPlaylistDetailFragment"
+
+            app:destination="@id/publicPlaylistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+
+
+
+
+    <!-- Profile Fragment -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.doan13.ui.fragments.ProfileFragment"
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profileFragment_to_playlistDetailFragment"
+
+            app:destination="@id/publicPlaylistDetailFragment">
+            <argument
+                android:name="playlistId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <!-- Upload Fragment -->
+    <fragment
+        android:id="@+id/uploadFragment"
+        android:name="com.example.doan13.ui.fragments.UploadFragment"
+        android:label="Upload" />
+
+    <!-- Playlist Detail Fragment -->
+    <fragment
+        android:id="@+id/playlistDetailFragment"
+        android:name="com.example.doan13.ui.fragments.PlaylistDetailFragment">
+        <argument
+            android:name="playlistId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- Mini Player Fragment -->
+    <fragment
+        android:id="@+id/miniPlayerFragment"
+        android:name="com.example.doan13.ui.fragments.MiniPlayerFragment"
+        android:label="Mini Player">
+    </fragment>
+
+    <!-- Player Fragment (Full Player) -->
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.example.doan13.ui.fragments.PlayerFragment"
+        android:label="Player">
+        <argument
+            android:name="itemId"
+            app:argType="string" />
+        <argument
+            android:name="isTrack"
+            app:argType="boolean"
+            android:defaultValue="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/publicPlaylistDetailFragment"
+        android:name="com.example.doan13.ui.fragments.PublistPlaylistDetailFragment"
+        android:label="PublicDetailPlaylic">
+        <argument
+            android:name="playlistId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_publicPlaylistDetailFragment_to_Profile"
+            app:destination="@id/publicProfileFragment">
+            <argument
+                android:name="userId"
+                app:argType="string" />
+        </action>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/publicProfileFragment"
+        android:name="com.example.doan13.ui.fragments.PublicProfileFragment"
+        android:label="PublicProFIle">
+        <argument
+            android:name="userId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/PLaylistLikedProfileFragment"
+        android:name="com.example.doan13.ui.fragments.PlaylistsTabFragment"
+        android:label="PublicProFIle">
+
+    </fragment>
+</navigation>

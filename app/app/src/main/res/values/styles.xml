@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BottomNavLabelStyle" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">15sp</item> <!-- Cỡ chữ -->
+        <item name="android:textStyle">bold</item> <!-- Cỡ chữ -->
+        <item name="android:textColor">#FF000000</item> <!-- Màu chữ đen, có thể đổi -->
+    </style>
+</resources>

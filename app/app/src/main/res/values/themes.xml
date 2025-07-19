@@ -1,0 +1,18 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Doan13" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+         <item name="android:fontFamily">@font/font_custom</item>
+         <item name="fontFamily">@font/font_custom</item>
+        <item name="android:statusBarColor">#FF5722</item> <!-- Làm trong suốt status bar -->
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <style name="Theme.Doan13" parent="Base.Theme.Doan13" />
+    <style name="Theme.MyApp.NoStatusBar" parent="Theme.Doan13">
+        <item name="android:windowFullscreen">true</item>
+
+        <item name="android:statusBarColor">#FF5722</item>
+    </style>
+</resources>

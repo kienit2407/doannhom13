@@ -18,8 +18,8 @@ import javax.inject.Inject
 class UploadViewModel @Inject constructor(
     private val repository: SongRepositories
 ) : ViewModel() {
-    private val _uploadProgress = MutableLiveData<Int>(0) // Thêm LiveData cho tiến trình
-    val uploadProgress: LiveData<Int> = _uploadProgress
+    private val _uploadProgress = MutableLiveData<Int?>(0) // Thêm LiveData cho tiến trình
+    val uploadProgress: LiveData<Int?> = _uploadProgress
 
     private val _uploadState = MutableLiveData<Result<String>?>()
     val uploadState: LiveData<Result<String>?> get() = _uploadState
@@ -67,6 +67,7 @@ class UploadViewModel @Inject constructor(
     fun removeUploadState (){
         viewModelScope.launch {
             _uploadState.value = null
+            _uploadProgress.value = null
         }
     }
 

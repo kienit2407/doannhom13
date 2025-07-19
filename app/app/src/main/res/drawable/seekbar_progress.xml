@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/progress">
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" /> <!-- Góc bo tròn -->
+            <solid android:color="#FF5722" /> <!-- Màu tiến trình đỏ -->
+        </shape>
+    </item>
+</layer-list>

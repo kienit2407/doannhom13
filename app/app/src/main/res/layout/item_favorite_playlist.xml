@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:background="@drawable/playlistadd"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical">
+
+   <androidx.constraintlayout.widget.ConstraintLayout
+       android:layout_width="wrap_content"
+       android:layout_marginRight="10dp"
+       android:background="@drawable/custom_playlist"
+       android:layout_height="wrap_content">
+       <!-- CardView chứa ảnh -->
+       <androidx.cardview.widget.CardView
+           android:layout_width="150dp"
+           android:layout_height="85dp"
+           android:background="@drawable/custom_playlist"
+           app:cardCornerRadius="10dp"
+           app:layout_constraintBottom_toBottomOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent">
+
+           <ImageView
+               android:id="@+id/imgPlaylist"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:scaleType="centerCrop"
+               android:src="@drawable/user" />
+       </androidx.cardview.widget.CardView>
+   </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Phần thông tin text -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingVertical="4dp">
+
+        <TextView
+            android:id="@+id/txtNamPlaylist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chill"
+            android:textSize="16sp"
+            android:textColor="@color/textColor2"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/txtAmount"
+                android:layout_width="wrap_content"
+                android:textColor="@color/textColor2"
+                android:layout_height="wrap_content"
+                android:text="6"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                app:srcCompat="@drawable/amount_playlist" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Ngày đăng"
+            android:textSize="12sp"
+            android:textColor="@color/textColor2"/>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imgButtonDelete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:padding="8dp"
+        app:srcCompat="@drawable/menu" />
+</LinearLayout>

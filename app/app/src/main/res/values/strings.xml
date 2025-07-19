@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">doan13</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="underlined_button_text"><u>Recovry Password</u></string>
+    <string name="underlined_button_text_signin"><u>Sign In</u></string>
+    <string name="underlined_button_text_signup"><u>Register</u></string>
+    <string name="clientId">706446676684-1m9350fdl9hjl73qe8jlu149dt90900r.apps.googleusercontent.com</string>
+    <string name="apiSecretCloud">ccN7x_5rjx8YRIQFROcbMmgahvE</string>
+    <string name="keyApiCloud">224795637491789</string>
+    <string name="nameCloud">deyzjx3oq</string>
+</resources>

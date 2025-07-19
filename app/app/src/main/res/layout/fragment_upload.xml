@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:fitsSystemWindows="true"
+    android:paddingTop="20dp"
+    android:layout_marginHorizontal="20dp"
+    tools:context=".ui.fragments.UploadFragment">
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="left"
+        android:padding="5dp"
+        app:srcCompat="@drawable/chevron_left_20px"
+        android:background="@drawable/input_custom"/>
+    <FrameLayout
+        android:layout_width="210dp"
+        android:layout_height="210dp"
+        android:background="@drawable/avatar_gradient_border">
+        <androidx.cardview.widget.CardView
+            android:layout_gravity="center"
+            android:layout_width="200dp"
+            app:cardCornerRadius="100dp"
+            android:layout_height="200dp"
+            android:background="@drawable/input_custom2">
+
+            <ImageView
+                android:id="@+id/imgThumbnails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="Thumbnail Preview"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/imgIcon"
+                android:layout_width="34dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:contentDescription="Thumbnail Preview"
+                android:scaleType="centerCrop"
+                android:src="@drawable/add_photo" />
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textViewThumbnailStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:textColor="@color/textState" />
+
+    <EditText
+        android:id="@+id/edtTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/input_custom2"
+        android:ems="10"
+        android:hint="Enter Title"
+        android:inputType="text"
+        android:minHeight="60dp"
+        android:paddingHorizontal="20dp"
+        android:textColorHint="@color/textColor2"
+        android:textSize="16dp" />
+
+    <EditText
+        android:id="@+id/edtArtist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/input_custom2"
+        android:ems="10"
+        android:hint="Enter Artist"
+        android:inputType="text"
+        android:minHeight="60dp"
+        android:paddingHorizontal="20dp"
+        android:textColorHint="@color/textColor2"
+        android:textSize="16dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSelectMp3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/button_custom"
+        android:elevation="20dp"
+        android:minHeight="60dp"
+        android:text="Select MP3"
+        android:textAllCaps="false"
+        android:textColor="#ffff"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewMp3Status"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:textColor="@color/textState" />
+
+    <ProgressBar
+        android:id="@+id/pbUploadMp3"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
+        android:visibility="gone"
+        android:minHeight="10dp"
+        android:layout_height="wrap_content" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonUpload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_custom"
+        android:elevation="20dp"
+        android:minHeight="60dp"
+        android:text="Tải lên"
+        android:textAllCaps="false"
+        android:textColor="#ffff"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:layout_height="34dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/textState" />
+
+</LinearLayout>

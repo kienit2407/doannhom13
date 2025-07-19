@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="5dp"
+    android:background="@drawable/background3"
+    android:padding="8dp">
+
+
+   <androidx.constraintlayout.widget.ConstraintLayout
+       android:layout_width="wrap_content"
+       android:background="@drawable/custom_playlist"
+       android:layout_height="wrap_content">
+
+       <androidx.cardview.widget.CardView
+           android:layout_width="150dp"
+           android:layout_height="150dp"
+           app:cardCornerRadius="10dp"
+           app:layout_constraintBottom_toBottomOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent">
+
+           <ImageView
+               android:id="@+id/imgThumbnails"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:scaleType="centerCrop"
+               app:srcCompat="@drawable/user" />
+       </androidx.cardview.widget.CardView>
+   </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="match_parent"
+        android:layout_marginTop="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textStyle="bold"
+        android:textColor="@color/textColorButton"
+        android:textSize="16sp"
+        android:layout_height="wrap_content"
+        android:text="Hay trao cho anh" />
+
+    <TextView
+        android:id="@+id/txtArtist"
+        android:layout_width="match_parent"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/textColorButton"
+        android:layout_height="wrap_content"
+        android:text="Hay trao cho anh" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="Playlist"
+            android:textColor="@color/textColorButton"
+            android:textSize="13sp" />
+
+
+        <TextView
+            android:id="@+id/textView13"
+            android:layout_width="21dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+
+            android:text="•"
+            android:textColor="@color/textColorButton" />
+
+        <TextView
+            android:id="@+id/txtmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="6"
+            android:textColor="@color/textColorButton" />
+
+        <ImageView
+            android:id="@+id/imageVieww"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_gravity="center"
+            android:layout_marginLeft="2dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/libary1" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="29dp">
+
+        <LinearLayout
+            android:id="@+id/linearLayout7"
+            android:layout_width="79dp"
+            android:layout_height="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView6"
+                android:layout_width="wrap_content"
+                android:layout_height="14dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/view2" />
+
+            <TextView
+                android:id="@+id/txtLuotxem"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:text="4 lượt nghe"
+                android:textColor="@color/textColorButton"
+                android:textSize="10sp" />
+
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imgbuttonAddPlaylist"
+            android:layout_width="29dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/add_playlist2" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</LinearLayout>

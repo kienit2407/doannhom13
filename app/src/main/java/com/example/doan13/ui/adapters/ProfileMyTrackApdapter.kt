@@ -18,8 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class ProfileMyTrackApdapter (
     //tạo biến contructor click
     private val onSongClick: (String) -> Unit,
-    private val onDeleteSongClick: (String) -> Unit,
-    private val onSAddPlaylist: (String) -> Unit,
+    private val onOptionSongClick: (String) -> Unit,
     private val songViewModel: SongViewModel,
 
 ): RecyclerView.Adapter<ProfileMyTrackApdapter.ProfileMyTrackViewHolder>(){
@@ -55,11 +54,11 @@ class ProfileMyTrackApdapter (
 
             }
             binding.txtLuotxem.text = "${song.playCount} Lượt nghe"
-            binding.imgbuttonAddPlaylist.setOnClickListener{
-                onSAddPlaylist(song.songId)
-            }
-            binding.imgbuttonDelete.setOnClickListener{
-                onDeleteSongClick(song.songId)
+//            binding.imgbuttonAddPlaylist.setOnClickListener{
+//                onSAddPlaylist(song.songId)
+//            }
+            binding.imgbuttonMenu.setOnClickListener{
+                onOptionSongClick(song.songId)
             }
         }
     }
